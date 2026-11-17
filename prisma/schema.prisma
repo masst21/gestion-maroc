@@ -23,6 +23,8 @@ model Store {
   articles    Article[]
   clients     Client[]
   sales       Sale[]
+  suppliers   Supplier[]
+  purchases   Purchase[]
 }
 
 model User {
@@ -56,6 +58,7 @@ model Article {
 
   store         Store     @relation(fields: [storeId], references: [id])
   saleItems     SaleItem[]
+  purchaseItems PurchaseItem[]
 
   @@unique([storeId, reference])
 }
@@ -108,5 +111,40 @@ model SaleItem {
   lineTotalTtc Float
 
   sale         Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  article      Article  @relation(fields: [articleId], references: [id])
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  storeId   String
+  name      String
+  phone     String?
+  ice       String?
+  createdAt DateTime @default(now())
+
+  store     Store      @relation(fields: [storeId], references: [id])
+  purchases Purchase[]
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  storeId     String
+  supplierId  String
+  totalAmount Float
+  createdAt   DateTime @default(now())
+
+  store       Store          @relation(fields: [storeId], references: [id])
+  supplier    Supplier       @relation(fields: [supplierId], references: [id])
+  items       PurchaseItem[]
+}
+
+model PurchaseItem {
+  id           String  @id @default(cuid())
+  purchaseId   String
+  articleId    String
+  quantity     Float
+  unitCost     Float
+
+  purchase     Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   article      Article  @relation(fields: [articleId], references: [id])
 }
