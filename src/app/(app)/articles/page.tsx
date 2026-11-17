@@ -122,18 +122,18 @@ export default function ArticlesPage() {
               <th className="p-3 text-right">Stock</th>
             </tr>
           </thead>
-          <tbody>
+                    <tbody>
             {loading ? (
               <tr><td colSpan={5} className="p-6 text-center text-gray-500">Chargement...</td></tr>
             ) : articles.length === 0 ? (
               <tr><td colSpan={5} className="p-6 text-center text-gray-500">Aucun article dans le catalogue</td></tr>
             ) : (
               articles.map(a => (
-                <tr key={a.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3 font-mono text-xs">{a.reference}</td>
+                <tr key={a.id} className="border-t hover:bg-gray-50 text-gray-900"> {/* Ajout de text-gray-900 ici */}
+                  <td className="p-3 font-mono text-xs text-gray-600">{a.reference}</td>
                   <td className="p-3 font-medium">{a.name}</td>
                   <td className="p-3 text-right">{formatMad(a.salePriceHt)}</td>
-                  <td className="p-3 text-right text-gray-500">{a.vatRate}%</td>
+                  <td className="p-3 text-right">{a.vatRate}%</td>
                   <td className="p-3 text-right font-semibold">
                     <span className={a.stockQty > 0 ? 'text-green-700' : 'text-red-700'}>
                       {a.stockQty}
