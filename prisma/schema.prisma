@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  ice         String?
+  ifNumber    String?
+  currency    String   @default("MAD")
+  vatRate     Float    @default(20)
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+
+  users       User[]
+  articles    Article[]
+  clients     Client[]
+  sales       Sale[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  storeId      String
+  email        String   @unique
+  password     String
+  fullName     String
+  role         String   @default("admin")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  store        Store    @relation(fields: [storeId], references: [id])
+}
+
+model Article {
+  id            String   @id @default(cuid())
+  storeId       String
+  reference     String
+  barcode       String?
+  name          String
+  nameAr        String?
+  category      String?
+  purchasePrice Float    @default(0)
+  salePriceHt   Float    @default(0)
+  vatRate       Float    @default(20)
+  stockQty      Float    @default(0)
+  stockMin      Float    @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  store         Store     @relation(fields: [storeId], references: [id])
+  saleItems     SaleItem[]
+
+  @@unique([storeId, reference])
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  storeId     String
+  name        String
+  phone       String?
+  email       String?
+  ice         String?
+  creditLimit Float    @default(0)
+  balance     Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  store       Store    @relation(fields: [storeId], references: [id])
+  sales       Sale[]
+}
+
+model Sale {
+  id            String   @id @default(cuid())
+  storeId       String
+  clientId      String?
+  invoiceNo     String   @unique
+  saleDate      DateTime @default(now())
+  subtotalHt    Float    @default(0)
+  vatTotal      Float    @default(0)
+  totalTtc      Float    @default(0)
+  paidAmount    Float    @default(0)
+  dueAmount     Float    @default(0)
+  paymentStatus String   @default("paid")
+  saleType      String   @default("cash")
+  userId        String?
+  createdAt     DateTime @default(now())
+
+  store         Store     @relation(fields: [storeId], references: [id])
+  client        Client?   @relation(fields: [clientId], references: [id])
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id           String   @id @default(cuid())
+  saleId       String
+  articleId    String
+  quantity     Float
+  unitPriceHt  Float
+  vatRate      Float
+  lineTotalHt  Float
+  lineTotalTtc Float
+
+  sale         Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  article      Article  @relation(fields: [articleId], references: [id])
+}
