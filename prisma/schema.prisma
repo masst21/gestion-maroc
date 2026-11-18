@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,36 +9,37 @@ datasource db {
 }
 
 model Store {
-  id          String   @id @default(cuid())
-  name        String
-  address     String?
-  phone       String?
-  ice         String?
-  ifNumber    String?
-  currency    String   @default("MAD")
-  vatRate     Float    @default(20)
-  logoUrl     String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  phone     String?
+  ice       String?
+  ifNumber  String?
+  currency  String   @default("MAD")
+  vatRate   Float    @default(20)
+  logoUrl   String?
+  createdAt DateTime @default(now())
 
-  users       User[]
-  articles    Article[]
-  clients     Client[]
-  sales       Sale[]
-  suppliers   Supplier[]
-  purchases   Purchase[]
+  users        User[]
+  articles     Article[]
+  clients      Client[]
+  sales        Sale[]
+  suppliers    Supplier[]
+  purchases    Purchase[]
+  cashSessions CashSession[]
 }
 
 model User {
-  id           String   @id @default(cuid())
-  storeId      String
-  email        String   @unique
-  password     String
-  fullName     String
-  role         String   @default("admin")
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
+  id        String   @id @default(cuid())
+  storeId   String
+  email     String   @unique
+  password  String
+  fullName  String
+  role      String   @default("admin")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 
-  store        Store    @relation(fields: [storeId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
 }
 
 model Article {
@@ -56,7 +58,7 @@ model Article {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
 
-  store         Store     @relation(fields: [storeId], references: [id])
+  store         Store         @relation(fields: [storeId], references: [id])
   saleItems     SaleItem[]
   purchaseItems PurchaseItem[]
 
@@ -75,8 +77,8 @@ model Client {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
 
-  store       Store    @relation(fields: [storeId], references: [id])
-  sales       Sale[]
+  store Store  @relation(fields: [storeId], references: [id])
+  sales Sale[]
 }
 
 model Sale {
@@ -95,13 +97,13 @@ model Sale {
   userId        String?
   createdAt     DateTime @default(now())
 
-  store         Store     @relation(fields: [storeId], references: [id])
-  client        Client?   @relation(fields: [clientId], references: [id])
-  items         SaleItem[]
+  store  Store      @relation(fields: [storeId], references: [id])
+  client Client?    @relation(fields: [clientId], references: [id])
+  items  SaleItem[]
 }
 
 model SaleItem {
-  id           String   @id @default(cuid())
+  id           String @id @default(cuid())
   saleId       String
   articleId    String
   quantity     Float
@@ -110,8 +112,8 @@ model SaleItem {
   lineTotalHt  Float
   lineTotalTtc Float
 
-  sale         Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  article      Article  @relation(fields: [articleId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id])
 }
 
 model Supplier {
@@ -133,18 +135,44 @@ model Purchase {
   totalAmount Float
   createdAt   DateTime @default(now())
 
-  store       Store          @relation(fields: [storeId], references: [id])
-  supplier    Supplier       @relation(fields: [supplierId], references: [id])
-  items       PurchaseItem[]
+  store    Store          @relation(fields: [storeId], references: [id])
+  supplier Supplier       @relation(fields: [supplierId], references: [id])
+  items    PurchaseItem[]
 }
 
 model PurchaseItem {
-  id           String  @id @default(cuid())
-  purchaseId   String
-  articleId    String
-  quantity     Float
-  unitCost     Float
+  id         String @id @default(cuid())
+  purchaseId String
+  articleId  String
+  quantity   Float
+  unitCost   Float
 
-  purchase     Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  article      Article  @relation(fields: [articleId], references: [id])
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  article  Article  @relation(fields: [articleId], references: [id])
+}
+
+model CashSession {
+  id              String    @id @default(cuid())
+  storeId         String
+  openingBalance  Float
+  closingBalance  Float?
+  expectedBalance Float?
+  difference      Float?
+  status          String    @default("open")
+  openedAt        DateTime  @default(now())
+  closedAt        DateTime?
+
+  store     Store          @relation(fields: [storeId], references: [id])
+  movements CashMovement[]
+}
+
+model CashMovement {
+  id        String      @id @default(cuid())
+  sessionId String
+  type      String
+  amount    Float
+  reason    String
+  createdAt DateTime    @default(now())
+
+  session CashSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
