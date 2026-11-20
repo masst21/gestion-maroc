@@ -45,11 +45,15 @@ export default function SalesPage() {
       </div>
 
       {/* Modal Ticket */}
+          {/* Modal Ticket */}
       {selectedSale && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 print:bg-white print:p-0">
+          
+          {/* Le Ticket */}
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm print:shadow-none print:rounded-none print:w-[80mm] print:p-2">
+            
             <div className="text-center mb-4">
-              <h2 className="font-bold text-lg">TICKET DE CAISSE</h2>
+              <h2 className="font-bold text-lg">MON MAGASIN</h2>
               <p className="text-xs text-gray-500">{selectedSale.invoiceNo}</p>
               <p className="text-xs text-gray-500">{new Date(selectedSale.saleDate).toLocaleString('fr-MA')}</p>
             </div>
@@ -69,9 +73,11 @@ export default function SalesPage() {
               <div className="flex justify-between font-bold text-lg mt-2 pt-2 border-t"><span>Total TTC</span><span>{formatMad(selectedSale.totalTtc)}</span></div>
             </div>
 
-            <div className="mt-6 flex gap-2">
-              <button onClick={() => window.print()} className="flex-1 bg-blue-700 text-white py-2 rounded-lg text-sm">🖨️ Imprimer</button>
-              <button onClick={() => setSelectedSale(null)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg text-sm">Fermer</button>
+            <p className="text-center text-xs text-gray-500 mt-6">Merci de votre visite !</p>
+
+            <div className="mt-6 flex gap-2 print:hidden">
+              <button onClick={() => window.print()} className="flex-1 bg-blue-700 text-white py-2 rounded-lg text-sm font-medium">🖨️ Imprimer</button>
+              <button onClick={() => setSelectedSale(null)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium">Fermer</button>
             </div>
           </div>
         </div>
