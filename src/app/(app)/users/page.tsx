@@ -28,8 +28,10 @@ export default function UsersPage() {
         <input required type="email" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="border p-2 rounded flex-1" />
         <input required type="password" placeholder="Mot de passe" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="border p-2 rounded flex-1" />
         <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="border p-2 rounded">
-          <option value="cashier">Caissier</option>
           <option value="admin">Administrateur</option>
+          <option value="manager">Gérant</option>
+          <option value="cashier">Caissier / Vendeur</option>
+          <option value="accountant">Comptable</option>
         </select>
         <button className="bg-blue-700 text-white px-4 py-2 rounded">Ajouter</button>
       </form>

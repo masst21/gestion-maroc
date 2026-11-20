@@ -53,7 +53,8 @@ export default function SalesPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-sm print:shadow-none print:rounded-none print:w-[80mm] print:p-2">
             
             <div className="text-center mb-4">
-              <h2 className="font-bold text-lg">MON MAGASIN</h2>
+              <h2 className="font-bold text-lg">Ticket de Vente</h2>
+<p className="text-xs font-semibold">{/* Ici, l'idéal serait de mettre le nom du magasin dynamiquement */} Votre Magasin</p>
               <p className="text-xs text-gray-500">{selectedSale.invoiceNo}</p>
               <p className="text-xs text-gray-500">{new Date(selectedSale.saleDate).toLocaleString('fr-MA')}</p>
             </div>

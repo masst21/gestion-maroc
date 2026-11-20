@@ -13,32 +13,34 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
   if (!user) redirect('/login');
 
-  const navItems = [
-    { href: '/dashboard', label: 'Tableau de bord', icon: '📊' },
-    { href: '/pos', label: 'Nouvelle Vente (POS)', icon: '🛒' },
-    { href: '/articles', label: 'Articles', icon: '📦' },
-    { href: '/sales', label: 'Historique Ventes', icon: '🧾' },
-    { href: '/clients', label: 'Clients', icon: '👥' },
-    { href: '/cash', label: 'Caisse', icon: '💰' },
-    { href: '/zakat', label: 'Zakat', icon: '🕌' },
-{ href: '/accounting', label: 'Comptabilité', icon: '📚' },
-{ href: '/users', label: 'Utilisateurs', icon: '👥' },
+  // On définit tous les menus possibles
+  const allNavItems = [
+    { href: '/dashboard', label: 'Tableau de bord', icon: '📊', roles: ['admin', 'manager', 'accountant'] },
+    { href: '/pos', label: 'Nouvelle Vente (POS)', icon: '🛒', roles: ['admin', 'manager', 'cashier'] },
+    { href: '/sales', label: 'Historique Ventes', icon: '🧾', roles: ['admin', 'manager', 'cashier', 'accountant'] },
+    { href: '/articles', label: 'Articles', icon: '📦', roles: ['admin', 'manager'] },
+    { href: '/purchases', label: 'Achats (Stock)', icon: '🚚', roles: ['admin', 'manager'] },
+    { href: '/clients', label: 'Clients', icon: '👥', roles: ['admin', 'manager', 'cashier'] },
+    { href: '/cash', label: 'Caisse', icon: '💰', roles: ['admin', 'manager', 'cashier'] },
+    { href: '/accounting', label: 'Comptabilité', icon: '📚', roles: ['admin', 'accountant'] },
+    { href: '/zakat', label: 'Zakat', icon: '🕌', roles: ['admin', 'accountant'] },
+    { href: '/users', label: 'Utilisateurs', icon: '🔐', roles: ['admin'] },
+    { href: '/settings', label: 'Paramètres', icon: '⚙️', roles: ['admin'] },
   ];
+
+  // On filtre selon le rôle de l'utilisateur connecté
+  const navItems = allNavItems.filter(item => item.roles.includes(user.role));
 
   return (
     <div className="min-h-screen flex bg-gray-50">
-      {/* Notre nouveau menu (gère automatiquement mobile et PC) */}
       <MobileSidebar 
         storeName={user.store.name} 
         userName={user.fullName} 
         navItems={navItems} 
+        logoUrl={user.store.logoUrl}
       />
-
-      {/* Contenu principal (on ajoute un padding-top sur mobile pour ne pas cacher sous le bouton hamburger) */}
       <main className="flex-1 overflow-auto pt-16 md:pt-0 md:ml-64">
-        <div className="p-4 md:p-6">
-          {children}
-        </div>
+        <div className="p-4 md:p-6">{children}</div>
       </main>
     </div>
   );

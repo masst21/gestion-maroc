@@ -8,6 +8,17 @@ export default function MobileSidebar({ storeName, userName, navItems }: { store
 
   return (
     <>
+            <div className="p-4 border-b border-blue-800 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            {logoUrl && <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded object-cover" />}
+            <div>
+              <h1 className="font-bold text-sm leading-tight">Mon Magasin</h1>
+              <p className="text-xs text-blue-300">{storeName}</p>
+            </div>
+          </div>
+          <button onClick={() => setIsOpen(false)} className="md:hidden text-2xl text-blue-300 hover:text-white">✕</button>
+        </div>
+        
       {/* Bouton Hamburger (visible uniquement sur mobile) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b flex items-center px-4 z-40">
         <button onClick={() => setIsOpen(true)} className="text-2xl text-blue-900 p-2">
