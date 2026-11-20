@@ -33,12 +33,23 @@ export default function ClientsPage() {
             <tr><th className="p-3">Nom</th><th className="p-3">Téléphone</th><th className="p-3 text-right">Solde dû</th><th className="p-3 text-right">Plafond</th></tr>
           </thead>
           <tbody>
-            {clients.map(c => (
+                       {clients.map(c => (
               <tr key={c.id} className="border-t">
                 <td className="p-3 font-medium">{c.name}</td>
                 <td className="p-3">{c.phone}</td>
                 <td className={`p-3 text-right font-semibold ${c.balance > 0 ? 'text-red-600' : ''}`}>{formatMad(c.balance)}</td>
                 <td className="p-3 text-right text-gray-500">{formatMad(c.creditLimit)}</td>
+                <td className="p-3">
+                  {c.balance > 0 && c.phone && (
+                    <a 
+                      href={`https://wa.me/212${c.phone.replace(/^0/, '')}?text=${encodeURIComponent(`Bonjour ${c.name}, nous vous rappelons que votre solde dû est de ${formatMad(c.balance)}. Merci de passer régler. Cordialement.`)}`}
+                      target="_blank"
+                      className="text-green-600 hover:underline font-medium text-sm"
+                    >
+                      💬 Rappel WhatsApp
+                    </a>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

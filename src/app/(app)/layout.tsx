@@ -21,6 +21,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/clients', label: 'Clients', icon: '👥' },
     { href: '/cash', label: 'Caisse', icon: '💰' },
     { href: '/zakat', label: 'Zakat', icon: '🕌' },
+{ href: '/accounting', label: 'Comptabilité', icon: '📚' },
+{ href: '/users', label: 'Utilisateurs', icon: '👥' },
   ];
 
   return (
