@@ -32,6 +32,7 @@ export default function UsersPage() {
           <option value="manager">Gérant</option>
           <option value="cashier">Caissier / Vendeur</option>
           <option value="accountant">Comptable</option>
+          <option value="user">user</option>
         </select>
         <button className="bg-blue-700 text-white px-4 py-2 rounded">Ajouter</button>
       </form>
@@ -47,9 +48,17 @@ export default function UsersPage() {
               <tr key={u.id} className="border-t">
                 <td className="p-3 font-medium">{u.fullName}</td>
                 <td className="p-3">{u.email}</td>
-                <td className="p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {u.role === 'admin' ? 'Administrateur' : 'Caissier'}
+                           <td className="p-3">
+                  <span className={`px-2 py-0.5 rounded text-xs ${
+                    u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 
+                    u.role === 'accountant' ? 'bg-orange-100 text-orange-700' : 
+                    u.role === 'manager' ? 'bg-green-100 text-green-700' : 
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {u.role === 'admin' ? 'Administrateur' : 
+                     u.role === 'accountant' ? 'Comptable' :
+                      u.role === 'user' ? 'user' : 
+                     u.role === 'manager' ? 'Gérant' : 'Caissier'}
                   </span>
                 </td>
               </tr>

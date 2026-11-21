@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import LogoutButton from './LogoutButton';
 
-export default function MobileSidebar({ storeName, userName, navItems }: { storeName: string, userName: string, navItems: any[] }) {
+export default function MobileSidebar({ storeName, userName, navItems, logoUrl }: { storeName: string, userName: string, navItems: any[], logoUrl?: string | null }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
