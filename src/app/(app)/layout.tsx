@@ -26,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/zakat', label: 'Zakat', icon: '🕌', roles: ['admin', 'accountant'] },
     { href: '/users', label: 'Utilisateurs', icon: '🔐', roles: ['admin'] },
     { href: '/settings', label: 'Paramètres', icon: '⚙️', roles: ['admin'] },
+	{ href: '/help', label: 'Aide / Tutoriel', icon: '❓', roles: ['admin', 'manager', 'cashier', 'accountant'] },
   ];
 
   // On filtre selon le rôle de l'utilisateur connecté
