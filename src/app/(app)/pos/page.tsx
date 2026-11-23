@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { formatMad } from '@/lib/utils';
+import CameraScanner from '@/components/CameraScanner';
 
-type Article = { id: string; reference: string; name: string; salePriceHt: number; vatRate: number; stockQty: number; };
+type Article = { id: string; reference: string; name: string; barcode: string | null; salePriceHt: number; vatRate: number; stockQty: number; };
 type CartItem = Article & { quantity: number };
 
 export default function PosPage() {
@@ -15,8 +16,8 @@ export default function PosPage() {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showCamera, setShowCamera] = useState(false);
 
-  // 1. Fonction sécurisée pour charger les articles
   function loadArticles() {
     fetch('/api/articles')
       .then(res => res.ok ? res.json() : [])
@@ -32,7 +33,6 @@ export default function PosPage() {
       .catch(() => setClients([]));
   }, []);
 
-  // 2. Filtrage sécurisé
   const filteredArticles = search && Array.isArray(articles) 
     ? articles.filter(a => a.name.toLowerCase().includes(search.toLowerCase()) || a.reference.includes(search)) 
     : [];
@@ -44,6 +44,16 @@ export default function PosPage() {
       return [...prev, { ...article, quantity: 1 }];
     });
     setSearch('');
+  }
+
+  // Fonction qui gère le scan (caméra ou douchette)
+  function handleScan(code: string) {
+    const exactMatch = articles.find(a => a.barcode === code || a.reference === code);
+    if (exactMatch) {
+      addToCart(exactMatch);
+    } else {
+      alert("Code-barres " + code + " non reconnu ! Vérifiez qu'il est bien enregistré dans la fiche de l'article.");
+    }
   }
 
   function updateQty(id: string, qty: number) {
@@ -64,15 +74,10 @@ export default function PosPage() {
 
     const finalPaid = paidAmount === '' ? totalTtc : Number(paidAmount);
 
-    // 3. Sécurité anti-blocage (Timeout de 15 secondes)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
     try {
       const res = await fetch('/api/sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
         body: JSON.stringify({
           items: cart.map(item => ({
             articleId: item.id,
@@ -88,30 +93,17 @@ export default function PosPage() {
         }),
       });
 
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Erreur serveur');
-      }
+      if (!res.ok) throw new Error('Erreur serveur');
       
-      // Succès
       setCart([]);
       setClientId('');
       setPaidAmount('');
-      loadArticles(); // Recharge les stocks en arrière-plan
+      loadArticles(); 
       setSuccessMessage('✅ Vente enregistrée avec succès !');
       setTimeout(() => setSuccessMessage(''), 4000);
 
     } catch (e: any) {
-      clearTimeout(timeoutId);
-      if (e.name === 'AbortError') {
-        setErrorMessage('⏱️ Le serveur met trop de temps à répondre. Vérifiez votre connexion.');
-      } else if (e.message === 'Failed to fetch') {
-        setErrorMessage('❌ Impossible de contacter le serveur. Redémarrez l\'application.');
-      } else {
-        setErrorMessage(`❌ ${e.message}`);
-      }
+      setErrorMessage(`❌ Erreur lors de la validation.`);
       setTimeout(() => setErrorMessage(''), 5000);
     } finally {
       setLoading(false);
@@ -120,33 +112,63 @@ export default function PosPage() {
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] md:h-screen bg-gray-100">
+      
+      {/* Modal Caméra */}
+      {showCamera && (
+        <CameraScanner 
+          onScan={(code) => { setShowCamera(false); handleScan(code); }} 
+          onClose={() => setShowCamera(false)} 
+        />
+      )}
+
       {/* ZONE GAUCHE : Recherche et Panier */}
-      <div className="flex-1 p-4 md:p-6 flex flex-col overflow-hidden">
+      <div className="flex-1 p-4 md:p-6 flex flex-col overflow-hidden relative">
         <h1 className="text-xl md:text-2xl font-bold mb-4">Point de Vente</h1>
         
         {successMessage && <div className="bg-green-100 text-green-800 p-3 rounded-lg mb-4 text-sm font-medium">{successMessage}</div>}
         {errorMessage && <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm font-medium">{errorMessage}</div>}
 
-        <div className="relative mb-6">
+        {/* Barre de recherche avec bouton Caméra */}
+        <div className="relative mb-6 flex gap-2 z-20">
           <input
-            type="text" placeholder="Scanner ou rechercher un article..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-blue-500 focus:ring-0 outline-none bg-white"
+            type="text" 
+            placeholder="Scanner ou rechercher un article..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              // Gestion de la douchette USB (qui simule la touche Entrée)
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (search) handleScan(search);
+              }
+            }}
+            className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-blue-500 outline-none bg-white"
           />
-          {filteredArticles.length > 0 && (
-            <div className="absolute top-full left-0 right-0 bg-white border rounded-xl mt-1 shadow-lg z-10 max-h-64 overflow-y-auto">
-              {filteredArticles.map(a => (
-                <button key={a.id} onClick={() => addToCart(a)} className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b flex justify-between items-center">
-                  <div>
-                    <div className="font-bold">{a.name}</div>
-                    <div className="text-xs text-gray-500">Stock: {a.stockQty}</div>
-                  </div>
-                  <div className="font-semibold text-blue-700">{formatMad(a.salePriceHt)}</div>
-                </button>
-              ))}
-            </div>
-          )}
+          <button 
+            onClick={() => setShowCamera(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl text-2xl shadow transition-colors"
+            title="Scanner avec la caméra"
+          >
+            📷
+          </button>
         </div>
 
+        {/* Résultats de recherche au clavier */}
+        {filteredArticles.length > 0 && !search.includes(' ') && (
+          <div className="absolute top-32 left-4 right-4 md:left-6 md:right-[400px] bg-white border rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto">
+            {filteredArticles.map(a => (
+              <button key={a.id} onClick={() => addToCart(a)} className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b flex justify-between items-center">
+                <div>
+                  <div className="font-bold">{a.name}</div>
+                  <div className="text-xs text-gray-500">{a.reference} | Stock: {a.stockQty}</div>
+                </div>
+                <div className="font-semibold text-blue-700">{formatMad(a.salePriceHt)}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Panier */}
         <div className="bg-white rounded-xl shadow-sm border flex-1 flex flex-col overflow-hidden">
           <div className="p-3 md:p-4 bg-gray-50 border-b font-semibold grid grid-cols-12 gap-2 text-xs md:text-sm">
             <div className="col-span-6">Article</div>
@@ -155,8 +177,10 @@ export default function PosPage() {
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {cart.map(item => (
-              <div key={item.id} className="grid grid-cols-12 gap-2 items-center p-2 border-b last:border-0">
-                <div className="col-span-6"><p className="font-medium text-sm">{item.name}</p></div>
+              <div key={item.id} className="grid grid-cols-12 gap-2 items-center p-2 border-b last:border-0 hover:bg-gray-50">
+                <div className="col-span-6">
+                  <p className="font-medium text-sm">{item.name}</p>
+                </div>
                 <div className="col-span-2 flex justify-center">
                   <input type="number" value={item.quantity} onChange={(e) => updateQty(item.id, Number(e.target.value))} className="w-14 md:w-16 border rounded text-center py-1 text-sm" min="1" />
                 </div>
@@ -169,7 +193,7 @@ export default function PosPage() {
       </div>
 
       {/* ZONE DROITE : Paiement */}
-      <div className="w-full md:w-96 bg-white border-t md:border-t-0 md:border-l shadow-lg p-4 md:p-6 flex flex-col">
+      <div className="w-full md:w-96 bg-white border-t md:border-t-0 md:border-l shadow-lg p-4 md:p-6 flex flex-col z-10">
         <h2 className="text-lg md:text-xl font-bold mb-4 border-b pb-4">Résumé</h2>
         
         <div className="space-y-2 mb-6 flex-1 text-sm">
