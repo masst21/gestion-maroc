@@ -7,9 +7,7 @@ type Article = { id: string; reference: string; name: string; barcode: string | 
 type CartItem = Article & { quantity: number };
 
 export default function PosPage() {
-  const [paymentMethod, setPaymentMethod] = useState('cash'); 
-  const [paymentMethod, setPaymentMethod] = useState('card'); 
-  const [paymentMethod, setPaymentMethod] = useState('bank');  
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [articles, setArticles] = useState<Article[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -213,6 +211,16 @@ export default function PosPage() {
               type="number" 
               placeholder={`Payé (défaut: ${formatMad(totalTtc)})`} 
               value={paidAmount} 
+              onChange={e => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))} 
+              className="w-full border p-3 rounded-lg text-sm" 
+            />
+            {/* NOUVEAU : Affichage de la monnaie à rendre */}
+            {changeToReturn > 0 && (
+              <div className="mt-2 text-right text-sm font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                💰 Monnaie à rendre : {formatMad(changeToReturn)}
+              </div>
+            )}
+          </div>
           <div>
             <label className="text-xs text-gray-500 mb-1 block">Mode de paiement</label>
             <select 
@@ -224,16 +232,6 @@ export default function PosPage() {
               <option value="card">💳 Carte Bancaire (TPE)</option>
               <option value="bank">🏦 Virement</option>
             </select>
-          </div>
-              onChange={e => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))} 
-              className="w-full border p-3 rounded-lg text-sm" 
-            />
-            {/* NOUVEAU : Affichage de la monnaie à rendre */}
-            {changeToReturn > 0 && (
-              <div className="mt-2 text-right text-sm font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
-                💰 Monnaie à rendre : {formatMad(changeToReturn)}
-              </div>
-            )}
           </div>
         </div>
 
