@@ -21,6 +21,7 @@ export default function SalesPage() {
               <th className="p-3">N° Facture</th>
               <th className="p-3">Date</th>
               <th className="p-3">Client</th>
+               <th className="p-3">Paiement</th>
               <th className="p-3 text-right">Total TTC</th>
               <th className="p-3">Action</th>
             </tr>
@@ -34,6 +35,11 @@ export default function SalesPage() {
                 <td className="p-3 text-right font-semibold">{formatMad(sale.totalTtc)}</td>
                 <td className="p-3">
                   <button onClick={() => setSelectedSale(sale)} className="text-blue-700 hover:underline text-xs font-medium">
+                <td className="p-3">
+                  <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700">
+                    {sale.paymentMethod === 'card' ? '💳 TPE' : sale.paymentMethod === 'bank' ? '🏦 Virement' : '💵 Espèces'}
+                  </span>
+                </td>
                     Voir le ticket
                   </button>
                 </td>

@@ -7,6 +7,9 @@ type Article = { id: string; reference: string; name: string; barcode: string | 
 type CartItem = Article & { quantity: number };
 
 export default function PosPage() {
+  const [paymentMethod, setPaymentMethod] = useState('cash'); 
+  const [paymentMethod, setPaymentMethod] = useState('card'); 
+  const [paymentMethod, setPaymentMethod] = useState('bank');  
   const [articles, setArticles] = useState<Article[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -91,6 +94,7 @@ export default function PosPage() {
           totalHt, totalVat, totalTtc,
           clientId: clientId || null,
           paidAmount: numericPaid,
+          paymentMethod: paymentMethod,
         }),
       });
 
@@ -209,6 +213,18 @@ export default function PosPage() {
               type="number" 
               placeholder={`Payé (défaut: ${formatMad(totalTtc)})`} 
               value={paidAmount} 
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Mode de paiement</label>
+            <select 
+              value={paymentMethod} 
+              onChange={e => setPaymentMethod(e.target.value)} 
+              className="w-full border p-3 rounded-lg text-sm bg-gray-50 font-medium"
+            >
+              <option value="cash">💵 Espèces</option>
+              <option value="card">💳 Carte Bancaire (TPE)</option>
+              <option value="bank">🏦 Virement</option>
+            </select>
+          </div>
               onChange={e => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))} 
               className="w-full border p-3 rounded-lg text-sm" 
             />

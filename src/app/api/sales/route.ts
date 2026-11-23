@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 401 });
 
     const body = await req.json();
-    const { items, totalTtc, totalHt, totalVat, clientId, paidAmount } = body;
+    const { items, totalTtc, totalHt, totalVat, clientId, paidAmount, paymentMethod } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Panier vide' }, { status: 400 });
@@ -54,6 +54,7 @@ export async function POST(req: Request) {
           paidAmount: finalPaidAmount,
           dueAmount: dueAmount,
           paymentStatus: finalPaidAmount >= totalTtc ? 'paid' : (finalPaidAmount === 0 ? 'credit' : 'partial'),
+ paymentMethod: paymentMethod || 'cash',
           saleType: clientId ? 'credit' : 'cash',
           userId: user.id,
           items: {
