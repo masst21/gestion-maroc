@@ -19,7 +19,6 @@ export default async function DashboardPage() {
   today.setHours(0, 0, 0, 0);
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  // 1. Récupération des KPIs
   const [salesToday, salesMonth, clientsWithDebt, openCashSession, recentSales] = await Promise.all([
     prisma.sale.aggregate({ where: { storeId: user.storeId, saleDate: { gte: today } }, _sum: { totalTtc: true }, _count: true }),
     prisma.sale.aggregate({ where: { storeId: user.storeId, saleDate: { gte: startOfMonth } }, _sum: { totalTtc: true } }),
@@ -39,7 +38,6 @@ export default async function DashboardPage() {
     cashBalance = openCashSession.openingBalance + inFlow - outFlow;
   }
 
-  // 2. Préparation des données pour les graphiques
   const last7Days = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
@@ -85,7 +83,6 @@ export default async function DashboardPage() {
         </Link>
       </header>
 
-      {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
           <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">CA du jour</p>
@@ -109,10 +106,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Composant Graphiques */}
       <DashboardCharts data={chartData} />
 
-      {/* Dernières ventes */}
       <div className="bg-white rounded-xl border p-5">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-gray-900">Dernières ventes</h2>
