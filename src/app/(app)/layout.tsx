@@ -26,6 +26,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/users', label: 'Utilisateurs', icon: '🔐', roles: ['admin'] },
     { href: '/settings', label: 'Paramètres', icon: '⚙️', roles: ['admin'] },
     { href: '/help', label: 'Aide', icon: '❓', roles: ['admin', 'manager', 'cashier', 'accountant'] },
+    { href: '/quotes', label: 'Devis', icon: '📝', roles: ['admin', 'manager', 'cashier'] },
+    { href: '/expenses', label: 'Dépenses', icon: '💸', roles: ['admin', 'manager', 'accountant'] },
   ];
 
   const navItems = allNavItems.filter(item => item.roles.includes(user.role));

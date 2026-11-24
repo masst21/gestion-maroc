@@ -27,6 +27,8 @@ model Store {
   suppliers    Supplier[]
   purchases    Purchase[]
   cashSessions CashSession[]
+   expenses    Expense[]
+    quotes     Quote[]
 }
 
 model User {
@@ -79,6 +81,7 @@ model Client {
 
   store Store  @relation(fields: [storeId], references: [id])
   sales Sale[]
+  quotes Quote[]
 }
 
 model Sale {
@@ -176,4 +179,43 @@ model CashMovement {
   createdAt DateTime    @default(now())
 
   session CashSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+model Expense {
+  id            String   @id @default(cuid())
+  storeId       String
+  category      String   // Loyer, Salaires, Factures, Divers...
+  description   String
+  amount        Float
+  paymentMethod String   @default("cash") // cash, card, bank
+  date          DateTime @default(now())
+
+  store         Store    @relation(fields: [storeId], references: [id])
+}
+
+model Quote {
+  id         String      @id @default(cuid())
+  storeId    String
+  clientId   String?
+  quoteNo    String      @unique
+  date       DateTime    @default(now())
+  validUntil DateTime?
+  status     String      @default("draft") // draft, sent, accepted, rejected
+  totalTtc   Float       @default(0)
+  notes      String?
+
+  store      Store       @relation(fields: [storeId], references: [id])
+  client     Client?     @relation(fields: [clientId], references: [id])
+  items      QuoteItem[]
+}
+
+model QuoteItem {
+  id           String  @id @default(cuid())
+  quoteId      String
+  description  String
+  quantity     Float
+  unitPriceHt  Float
+  vatRate      Float
+  lineTotalTtc Float
+
+  quote        Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 }
