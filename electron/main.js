@@ -28,7 +28,7 @@ function waitForServer(retries = 60) {
   const env = {
     ...process.env,
     PORT: String(PORT),
-    HOSTNAME: '127.0.0.1',
+    HOSTNAME: '0.0.0.0',
     NODE_ENV: isDev ? 'development' : 'production',
   };
 
