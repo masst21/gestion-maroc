@@ -57,6 +57,7 @@ model Article {
   vatRate       Float    @default(20)
   stockQty      Float    @default(0)
   stockMin      Float    @default(0)
+  imageUrl      String?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
 

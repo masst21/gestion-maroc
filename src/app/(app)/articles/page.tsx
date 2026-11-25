@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 type Article = {
-  id: string; reference: string; name: string;
+  id: string; reference: string; name: string; imageUrl: string | null;
   salePriceHt: number; vatRate: number; stockQty: number;
 };
 
@@ -16,7 +16,9 @@ export default function ArticlesPage() {
   const [showForm, setShowForm] = useState(false);
   const [importing, setImporting] = useState(false);
   
-  const [form, setForm] = useState({ reference: '', name: '', salePriceHt: '', vatRate: '20', stockQty: '' });
+  const [form, setForm] = useState({ 
+    reference: '', name: '', salePriceHt: '', vatRate: '20', stockQty: '', imageUrl: '' 
+  });
   const [error, setError] = useState('');
 
   function loadArticles() {
@@ -25,6 +27,40 @@ export default function ArticlesPage() {
   }
   useEffect(() => { loadArticles(); }, []);
 
+  // Fonction pour compresser l'image en Base64 (pour ne pas surcharger la base de données)
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 250; // On redimensionne pour le web
+        const MAX_HEIGHT = 250;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        } else {
+          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Compression JPEG à 70% de qualité
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setForm({ ...form, imageUrl: dataUrl });
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setError('');
     const res = await fetch('/api/articles', {
@@ -32,29 +68,23 @@ export default function ArticlesPage() {
     });
     const data = await res.json();
     if (!res.ok) { setError(data.error); return; }
-    setForm({ reference: '', name: '', salePriceHt: '', vatRate: '20', stockQty: '' });
+    setForm({ reference: '', name: '', salePriceHt: '', vatRate: '20', stockQty: '', imageUrl: '' });
     setShowForm(false); loadArticles();
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setImporting(true);
     const formData = new FormData();
     formData.append('file', file);
-
     const res = await fetch('/api/articles/import', { method: 'POST', body: formData });
     const data = await res.json();
-
     if (res.ok) {
-      alert(`✅ Importation réussie !\n${data.imported} articles traités.\n${data.errors} erreurs.`);
+      alert(`✅ Importation réussie !\n${data.imported} articles traités.`);
       loadArticles();
-    } else {
-      alert('Erreur lors de l\'importation');
-    }
-    setImporting(false);
-    e.target.value = ''; // Reset input
+    } else { alert('Erreur lors de l\'importation'); }
+    setImporting(false); e.target.value = '';
   }
 
   return (
@@ -62,17 +92,13 @@ export default function ArticlesPage() {
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold">Catalogue d'Articles</h1>
         <div className="flex gap-2">
-          {/* Bouton Export */}
           <a href="/api/articles/export" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm">
             ⬇️ Exporter Excel
           </a>
-          
-          {/* Bouton Import */}
           <label className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm cursor-pointer">
             {importing ? 'Importation...' : '⬆️ Importer Excel'}
             <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImport} disabled={importing} />
           </label>
-
           <button onClick={() => setShowForm(!showForm)} className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium text-sm">
             {showForm ? 'Annuler' : '+ Nouvel article'}
           </button>
@@ -89,6 +115,19 @@ export default function ArticlesPage() {
             <div><label className="block text-sm mb-1">Prix de vente HT (MAD)</label><input type="number" step="0.01" required value={form.salePriceHt} onChange={e => setForm({...form, salePriceHt: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
             <div><label className="block text-sm mb-1">TVA (%)</label><select value={form.vatRate} onChange={e => setForm({...form, vatRate: e.target.value})} className="w-full border rounded px-3 py-2"><option value="20">20 %</option><option value="10">10 %</option><option value="7">7 %</option><option value="0">0 %</option></select></div>
             <div><label className="block text-sm mb-1">Stock initial</label><input type="number" required value={form.stockQty} onChange={e => setForm({...form, stockQty: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+            
+            {/* CHAMP IMAGE */}
+            <div>
+              <label className="block text-sm mb-1">Image de l'article</label>
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="w-full border rounded px-3 py-1.5 text-sm" />
+              {form.imageUrl && (
+                <div className="mt-2 flex items-center gap-2">
+                  <img src={form.imageUrl} alt="Aperçu" className="w-12 h-12 object-cover rounded border" />
+                  <button type="button" onClick={() => setForm({...form, imageUrl: ''})} className="text-red-500 text-xs hover:underline">Supprimer</button>
+                </div>
+              )}
+            </div>
+
             <div className="md:col-span-2 flex justify-end mt-2"><button type="submit" className="bg-blue-700 text-white px-6 py-2 rounded-lg">Enregistrer</button></div>
           </form>
         </div>
@@ -97,13 +136,20 @@ export default function ArticlesPage() {
       <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
-            <tr><th className="p-3">Référence</th><th className="p-3">Désignation</th><th className="p-3 text-right">Prix HT</th><th className="p-3 text-right">TVA</th><th className="p-3 text-right">Stock</th></tr>
+            <tr><th className="p-3">Image</th><th className="p-3">Référence</th><th className="p-3">Désignation</th><th className="p-3 text-right">Prix HT</th><th className="p-3 text-right">TVA</th><th className="p-3 text-right">Stock</th></tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="p-6 text-center text-gray-500">Chargement...</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-gray-500">Chargement...</td></tr>
             ) : articles.map(a => (
-              <tr key={a.id} className="border-t hover:bg-gray-50 text-gray-900">
+              <tr key={a.id} className="border-t hover:bg-gray-50 text-gray-900 items-center">
+                <td className="p-3">
+                  {a.imageUrl ? (
+                    <img src={a.imageUrl} alt={a.name} className="w-10 h-10 object-cover rounded border shadow-sm" />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-100 rounded border flex items-center justify-center text-gray-400 text-xs">N/A</div>
+                  )}
+                </td>
                 <td className="p-3 font-mono text-xs text-gray-600">{a.reference}</td>
                 <td className="p-3 font-medium">{a.name}</td>
                 <td className="p-3 text-right">{formatMad(a.salePriceHt)}</td>

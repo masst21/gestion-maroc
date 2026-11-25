@@ -4,7 +4,7 @@ import { formatMad } from '@/lib/utils';
 import CameraScanner from '@/components/CameraScanner';
 import { dictionaries, Language } from '@/lib/dictionaries';
 
-type Article = { id: string; reference: string; name: string; barcode: string | null; salePriceHt: number; vatRate: number; stockQty: number; };
+type Article = { id: string; reference: string; name: string; barcode: string | null; salePriceHt: number; vatRate: number; stockQty: number; imageUrl: string | null; };
 type CartItem = Article & { quantity: number };
 
 export default function PosPage() {
@@ -22,7 +22,6 @@ export default function PosPage() {
   const [showCamera, setShowCamera] = useState(false);
 
   useEffect(() => {
-    // On récupère la langue
     const cookieLang = document.cookie.split('; ').find(row => row.startsWith('lang='))?.split('=')[1];
     setLang((cookieLang as Language) || 'fr');
 
@@ -77,10 +76,7 @@ export default function PosPage() {
 
   async function handleCheckout() {
     if (cart.length === 0 || loading) return;
-    
-    setLoading(true);
-    setSuccessMessage('');
-    setErrorMessage('');
+    setLoading(true); setSuccessMessage(''); setErrorMessage('');
 
     try {
       const res = await fetch('/api/sales', {
@@ -88,31 +84,17 @@ export default function PosPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: cart.map(item => ({
-            articleId: item.id,
-            quantity: item.quantity,
-            salePriceHt: item.salePriceHt,
-            vatRate: item.vatRate,
-            lineTotalHt: item.salePriceHt * item.quantity,
-            lineTotalTtc: (item.salePriceHt * (1 + item.vatRate / 100)) * item.quantity
+            articleId: item.id, quantity: item.quantity, salePriceHt: item.salePriceHt, vatRate: item.vatRate,
+            lineTotalHt: item.salePriceHt * item.quantity, lineTotalTtc: (item.salePriceHt * (1 + item.vatRate / 100)) * item.quantity
           })),
-          totalHt, totalVat, totalTtc,
-          clientId: clientId || null,
-          paidAmount: numericPaid,
-          paymentMethod: paymentMethod,
+          totalHt, totalVat, totalTtc, clientId: clientId || null, paidAmount: numericPaid, paymentMethod: paymentMethod,
         }),
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Erreur inconnue');
-      }
+      if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
       
-      setCart([]);
-      setClientId('');
-      setPaidAmount('');
-      loadArticles(); 
-      
+      setCart([]); setClientId(''); setPaidAmount(''); loadArticles(); 
       const changeMsg = changeToReturn > 0 ? ` - ${lang === 'ar' ? 'الباقي' : 'Monnaie'} : ${formatMad(changeToReturn)}` : '';
       setSuccessMessage(lang === 'ar' ? `✅ تم تسجيل البيع بنجاح! ${changeMsg}` : `✅ Vente enregistrée ! ${changeMsg}`);
       setTimeout(() => setSuccessMessage(''), 5000);
@@ -120,57 +102,44 @@ export default function PosPage() {
     } catch (e: any) {
       setErrorMessage(`❌ ${e.message}`);
       setTimeout(() => setErrorMessage(''), 6000);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] md:h-screen bg-gray-100">
-      {showCamera && (
-        <CameraScanner 
-          onScan={(code) => { setShowCamera(false); handleScan(code); }} 
-          onClose={() => setShowCamera(false)} 
-        />
-      )}
+      {showCamera && <CameraScanner onScan={(code) => { setShowCamera(false); handleScan(code); }} onClose={() => setShowCamera(false)} />}
 
       <div className="flex-1 p-4 md:p-6 flex flex-col overflow-hidden relative">
-        <h1 className="text-xl md:text-2xl font-bold mb-4">
-          {lang === 'ar' ? 'نقطة البيع' : 'Point de Vente'}
-        </h1>
+        <h1 className="text-xl md:text-2xl font-bold mb-4">{lang === 'ar' ? 'نقطة البيع' : 'Point de Vente'}</h1>
         
         {successMessage && <div className="bg-green-100 text-green-800 p-3 rounded-lg mb-4 text-sm font-medium">{successMessage}</div>}
         {errorMessage && <div className="bg-red-100 text-red-800 p-3 rounded-lg mb-4 text-sm font-medium">{errorMessage}</div>}
 
         <div className="relative mb-6 flex gap-2 z-20">
           <input
-            type="text" 
-            placeholder={lang === 'ar' ? "امسح أو ابحث عن منتج..." : "Scanner ou rechercher un article..."}
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (search) handleScan(search);
-              }
-            }}
+            type="text" placeholder={lang === 'ar' ? "امسح أو ابحث عن منتج..." : "Scanner ou rechercher un article..."}
+            value={search} onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (search) handleScan(search); } }}
             className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-blue-500 outline-none bg-white text-gray-900"
           />
-          <button 
-            onClick={() => setShowCamera(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl text-2xl shadow transition-colors"
-          >
-            📷
-          </button>
+          <button onClick={() => setShowCamera(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl text-2xl shadow transition-colors">📷</button>
         </div>
 
+        {/* Résultats de recherche avec Image */}
         {filteredArticles.length > 0 && !search.includes(' ') && (
-          <div className="absolute top-32 left-4 right-4 md:left-6 md:right-[400px] bg-white border rounded-xl shadow-lg z-10 max-h-64 overflow-y-auto">
+          <div className="absolute top-32 left-4 right-4 md:left-6 md:right-[400px] bg-white border rounded-xl shadow-lg z-10 max-h-80 overflow-y-auto">
             {filteredArticles.map(a => (
-              <button key={a.id} onClick={() => addToCart(a)} className="w-full text-left rtl:text-right px-4 py-3 hover:bg-blue-50 border-b flex justify-between items-center">
-                <div>
-                  <div className="font-bold text-gray-900">{a.name}</div>
-                  <div className="text-xs text-gray-500">{a.reference} | {lang === 'ar' ? 'المخزون' : 'Stock'}: {a.stockQty}</div>
+              <button key={a.id} onClick={() => addToCart(a)} className="w-full text-left rtl:text-right px-4 py-3 hover:bg-blue-50 border-b flex justify-between items-center gap-3">
+                <div className="flex items-center gap-3">
+                  {a.imageUrl ? (
+                    <img src={a.imageUrl} alt={a.name} className="w-10 h-10 object-cover rounded border shadow-sm" />
+                  ) : (
+                    <div className="w-10 h-10 bg-gray-100 rounded border flex items-center justify-center text-gray-400 text-xs">N/A</div>
+                  )}
+                  <div>
+                    <div className="font-bold text-gray-900">{a.name}</div>
+                    <div className="text-xs text-gray-500">{a.reference} | {lang === 'ar' ? 'المخزون' : 'Stock'}: {a.stockQty}</div>
+                  </div>
                 </div>
                 <div className="font-semibold text-blue-700">{formatMad(a.salePriceHt)}</div>
               </button>
@@ -184,10 +153,17 @@ export default function PosPage() {
             <div className="col-span-2 text-center">{lang === 'ar' ? 'الكمية' : 'Qté'}</div>
             <div className="col-span-4 text-left rtl:text-left ltr:text-right">{lang === 'ar' ? 'المجموع' : 'Total HT'}</div>
           </div>
+          
           <div className="flex-1 overflow-y-auto p-2">
             {cart.map(item => (
               <div key={item.id} className="grid grid-cols-12 gap-2 items-center p-2 border-b last:border-0 hover:bg-gray-50 text-gray-900">
-                <div className="col-span-6">
+                <div className="col-span-6 flex items-center gap-2">
+                  {/* Image dans le panier */}
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.name} className="w-8 h-8 object-cover rounded" />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-[10px]">N/A</div>
+                  )}
                   <p className="font-medium text-sm">{item.name}</p>
                 </div>
                 <div className="col-span-2 flex justify-center">
@@ -218,10 +194,8 @@ export default function PosPage() {
           
           <div>
             <input 
-              type="number" 
-              placeholder={lang === 'ar' ? 'المبلغ المدفوع' : `Payé (défaut: ${formatMad(totalTtc)})`}
-              value={paidAmount} 
-              onChange={e => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))} 
+              type="number" placeholder={lang === 'ar' ? 'المبلغ المدفوع' : `Payé (défaut: ${formatMad(totalTtc)})`}
+              value={paidAmount} onChange={e => setPaidAmount(e.target.value === '' ? '' : Number(e.target.value))} 
               className="w-full border p-3 rounded-lg text-sm text-gray-900" 
             />
             {changeToReturn > 0 && (
@@ -231,11 +205,7 @@ export default function PosPage() {
             )}
           </div>
 
-          <select 
-            value={paymentMethod} 
-            onChange={e => setPaymentMethod(e.target.value)} 
-            className="w-full border p-3 rounded-lg text-sm bg-gray-50 font-medium text-gray-900"
-          >
+          <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className="w-full border p-3 rounded-lg text-sm bg-gray-50 font-medium text-gray-900">
             <option value="cash">💵 {lang === 'ar' ? 'نقدا' : 'Espèces'}</option>
             <option value="card">💳 {lang === 'ar' ? 'بطاقة بنكية' : 'Carte Bancaire (TPE)'}</option>
             <option value="bank">🏦 {lang === 'ar' ? 'تحويل بنكي' : 'Virement'}</option>
@@ -243,8 +213,7 @@ export default function PosPage() {
         </div>
 
         <button 
-          onClick={handleCheckout} 
-          disabled={cart.length === 0 || loading} 
+          onClick={handleCheckout} disabled={cart.length === 0 || loading} 
           className={`w-full text-white text-lg font-bold py-4 rounded-xl transition-colors ${loading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}
         >
           {loading ? (lang === 'ar' ? 'جاري المعالجة...' : 'Traitement...') : (lang === 'ar' ? 'تأكيد البيع' : 'VALIDER LA VENTE')}
