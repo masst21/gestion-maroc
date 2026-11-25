@@ -44,7 +44,7 @@
     "appId": "ma.gestion.commerciale",
     "productName": "Mon Magasin",
     "directories": {
-      "output": "release"
+      "output": "dist"
     },
     "files": [
       "electron/**/*",
