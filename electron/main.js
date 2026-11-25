@@ -30,6 +30,7 @@ function waitForServer(retries = 60) {
     PORT: String(PORT),
     HOSTNAME: '0.0.0.0',
     NODE_ENV: isDev ? 'development' : 'production',
+DATABASE_URL:"postgresql://neondb_owner:npg_nR8u6xGsIkal@ep-wild-hat-bdl43sui-pooler.c-8.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require&connect_timeout=15"
   };
 
  function startNextServer() {

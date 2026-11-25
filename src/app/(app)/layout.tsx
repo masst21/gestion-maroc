@@ -2,8 +2,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import MobileSidebar from '@/components/MobileSidebar';
-import { dictionaries, Language } from '@/lib/dictionaries';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { dictionaries, Language } from '@/lib/dictionaries';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const userId = cookies().get('gm_session')?.value;
@@ -15,9 +15,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
   if (!user) redirect('/login');
 
+  // Gestion de la langue
   const lang = (cookies().get('lang')?.value || 'fr') as Language;
   const t = dictionaries[lang];
 
+  // On définit tous les menus avec traductions
   const allNavItems = [
     { href: '/dashboard', label: t.dashboard, icon: '📊', roles: ['admin', 'manager', 'accountant'] },
     { href: '/pos', label: t.pos, icon: '🛒', roles: ['admin', 'manager', 'cashier'] },
@@ -32,33 +34,32 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/zakat', label: t.zakat, icon: '🕌', roles: ['admin', 'accountant'] },
     { href: '/users', label: t.users, icon: '🔐', roles: ['admin'] },
     { href: '/settings', label: t.settings, icon: '⚙️', roles: ['admin'] },
+    { href: '/settings/currencies', label: lang === 'ar' ? 'العملات' : 'Devises', icon: '💱', roles: ['admin'] },
     { href: '/help', label: t.help, icon: '❓', roles: ['admin', 'manager', 'cashier', 'accountant'] },
   ];
 
+  // Filtrage selon le rôle
   const navItems = allNavItems.filter(item => item.roles.includes(user.role));
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
-      
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
       <MobileSidebar 
         storeName={user.store.name} 
         userName={user.fullName} 
         navItems={navItems} 
         logoUrl={user.store.logoUrl}
       />
-
-      <main className="flex-1 w-full md:ml-64 pt-16 md:pt-0 h-screen overflow-y-auto">
-        
-        {/* LE BOUTON DE LANGUE EST ICI */}
+      
+      <main className="flex-1 w-full md:ml-64 pt-16 md:pt-0 h-screen overflow-y-auto relative">
+        {/* Bouton pour changer la langue */}
         <div className="absolute top-4 right-4 z-50">
           <LanguageSwitcher currentLang={lang} />
         </div>
 
-        <div className="p-4 md:p-6 pt-16 md:pt-6"> {/* pt-16 pour ne pas cacher sous le bouton sur mobile */}
+        <div className="p-4 md:p-6 pt-16 md:pt-6">
           {children}
         </div>
       </main>
-
     </div>
   );
 }

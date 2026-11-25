@@ -26,6 +26,7 @@ model Store {
   sales        Sale[]
   suppliers    Supplier[]
   purchases    Purchase[]
+  currencies Currency[]
   cashSessions CashSession[]
    expenses    Expense[]
     quotes     Quote[]
@@ -207,6 +208,16 @@ model Quote {
   store      Store       @relation(fields: [storeId], references: [id])
   client     Client?     @relation(fields: [clientId], references: [id])
   items      QuoteItem[]
+}
+
+model Currency {
+  id       String @id @default(cuid())
+  storeId  String
+  code     String // EUR, USD, GBP
+  name     String // Euro, Dollar
+  rate     Float  // Combien de MAD vaut 1 unité de cette devise
+  isActive Boolean @default(true)
+  store    Store  @relation(fields: [storeId], references: [id])
 }
 
 model QuoteItem {
