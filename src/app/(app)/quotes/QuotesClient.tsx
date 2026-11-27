@@ -76,10 +76,10 @@ export default function QuotesClient({ lang }: { lang: 'fr' | 'ar' }) {
         </form>
       )}
 
-      <div className="bg-white rounded-xl border overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "قائمة عروض الأسعار" : "Liste des devis"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[480px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3">{tr("N° Devis", "رقم عرض السعر")}</th><th className="p-3">{tr("Date", "التاريخ")}</th><th className="p-3">{tr("Client", "العميل")}</th><th className="p-3 text-end">{tr("Total TTC", "الإجمالي شامل الضريبة")}</th><th className="p-3">{tr("Action", "الإجراء")}</th></tr>
+            <tr><th scope="col" className="p-3">{tr("N° Devis", "رقم عرض السعر")}</th><th scope="col" className="p-3">{tr("Date", "التاريخ")}</th><th scope="col" className="p-3">{tr("Client", "العميل")}</th><th scope="col" className="p-3 text-end">{tr("Total TTC", "الإجمالي شامل الضريبة")}</th><th scope="col" className="p-3">{tr("Action", "الإجراء")}</th></tr>
           </thead>
           <tbody>
             {quotes.map(q => (

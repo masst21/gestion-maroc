@@ -147,16 +147,16 @@ export default function PosPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border flex-1 flex flex-col overflow-x-auto">
-          <div className="p-3 md:p-4 bg-gray-50 border-b font-semibold grid grid-cols-12 gap-2 min-w-[310px] text-xs md:text-sm text-gray-700">
+        <div className="store-table-scroll store-cart bg-white rounded-xl shadow-sm border flex-1 flex flex-col overflow-x-auto" role="region" aria-label={lang === 'ar' ? 'سلة المشتريات' : 'Panier des articles'} tabIndex={0}>
+          <div className="store-cart-head p-3 md:p-4 font-semibold grid grid-cols-12 gap-2 min-w-[310px] text-xs md:text-sm">
             <div className="col-span-6">{lang === 'ar' ? 'المنتج' : 'Article'}</div>
             <div className="col-span-2 text-center">{lang === 'ar' ? 'الكمية' : 'Qté'}</div>
             <div className="col-span-4 text-end">{lang === 'ar' ? 'المجموع' : 'Total HT'}</div>
           </div>
           
-          <div className="flex-1 p-2 min-w-[310px] max-h-[60dvh] overflow-y-auto">
+          <div className="store-cart-body flex-1 min-w-[310px] max-h-[60dvh] overflow-y-auto">
             {cart.map(item => (
-              <div key={item.id} className="grid grid-cols-12 gap-2 items-center p-2 border-b last:border-0 hover:bg-gray-50 text-gray-900">
+              <div key={item.id} className="store-cart-row grid grid-cols-12 gap-2 items-center p-3 text-gray-900">
                 <div className="col-span-6 min-w-0 flex items-center gap-2">
                   {/* Image dans le panier */}
                   {item.imageUrl ? (

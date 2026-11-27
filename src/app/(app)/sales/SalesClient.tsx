@@ -16,16 +16,16 @@ export default function SalesClient({ lang }: { lang: 'fr' | 'ar' }) {
     <div className="min-w-0 p-2 sm:p-4 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">{tr("Historique des Ventes", "سجل المبيعات")}</h1>
       
-      <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl shadow-sm border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "سجل المبيعات" : "Historique des ventes"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[480px] text-sm">
           <thead className="bg-gray-50 text-start">
             <tr>
-              <th className="p-3">{tr("N° Facture", "رقم الفاتورة")}</th>
-              <th className="p-3">{tr("Date", "التاريخ")}</th>
-              <th className="p-3">{tr("Client", "العميل")}</th>
-              <th className="p-3">{tr("Paiement", "الدفع")}</th>
-              <th className="p-3 text-end">{tr("Total TTC", "الإجمالي شامل الضريبة")}</th>
-              <th className="p-3">{tr("Action", "الإجراء")}</th>
+              <th scope="col" className="p-3">{tr("N° Facture", "رقم الفاتورة")}</th>
+              <th scope="col" className="p-3">{tr("Date", "التاريخ")}</th>
+              <th scope="col" className="p-3">{tr("Client", "العميل")}</th>
+              <th scope="col" className="p-3">{tr("Paiement", "الدفع")}</th>
+              <th scope="col" className="p-3 text-end">{tr("Total TTC", "الإجمالي شامل الضريبة")}</th>
+              <th scope="col" className="p-3">{tr("Action", "الإجراء")}</th>
             </tr>
           </thead>
           <tbody>

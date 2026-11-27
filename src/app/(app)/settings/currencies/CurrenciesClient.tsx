@@ -30,10 +30,10 @@ export default function CurrenciesClient({ lang }: { lang: 'fr' | 'ar' }) {
         <button className="bg-blue-700 text-white px-4 py-2 rounded">{tr("Ajouter", "إضافة")}</button>
       </form>
 
-      <div className="bg-white rounded-xl border overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "أسعار الصرف" : "Taux de change"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[480px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3">{tr("Devise", "العملة")}</th><th className="p-3">{tr("Code", "الرمز")}</th><th className="p-3 text-end">{tr("1 Devise = (MAD)", "وحدة عملة واحدة = (MAD)")}</th></tr>
+            <tr><th scope="col" className="p-3">{tr("Devise", "العملة")}</th><th scope="col" className="p-3">{tr("Code", "الرمز")}</th><th scope="col" className="p-3 text-end">{tr("1 Devise = (MAD)", "وحدة عملة واحدة = (MAD)")}</th></tr>
           </thead>
           <tbody>
             {currencies.map(c => (

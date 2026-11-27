@@ -105,3 +105,23 @@
     .store-content table :is(th,td) { padding-block: .65rem; }
   }
 }
+
+
+/* Unified data tables, including the cash movements and POS grid. */
+@media screen {
+  .store-table-scroll { max-width: 100%; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+  .store-table-scroll:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  .store-data-table { font-variant-numeric: tabular-nums; }
+  .store-data-table :is(th,td) { overflow-wrap: anywhere; }
+  .store-data-table td.text-end { white-space: nowrap; overflow-wrap: normal; }
+  .store-data-table thead th { vertical-align: middle; }
+  .store-cash-movements thead th { position: sticky; top: 0; z-index: 1; }
+  .store-cart-head { background: var(--store-table-head); color: #fff; border-block-end: 1px solid #102c44; }
+  .store-cart-row { border-block-end: 1px solid var(--store-table-border); font-variant-numeric: tabular-nums; }
+  .store-cart-row:nth-child(odd) { background: #fff; }
+  .store-cart-row:nth-child(even) { background: var(--store-table-even); }
+  .store-cart-row:hover { background: #eaf1f8; }
+  .store-cart-head > :not(:last-child), .store-cart-row > :not(:last-child) { border-inline-end: 1px solid var(--store-table-border); padding-inline-end: .35rem; }
+  .store-cart-row > :last-child { overflow-wrap: anywhere; }
+}
+@media print { .store-table-scroll { overflow: visible !important; max-height: none !important; } }

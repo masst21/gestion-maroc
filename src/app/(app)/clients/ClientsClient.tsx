@@ -28,10 +28,10 @@ export default function ClientsClient({ lang }: { lang: 'fr' | 'ar' }) {
         <button className="bg-blue-700 text-white px-4 py-2 rounded">{tr("Ajouter", "إضافة")}</button>
       </form>
 
-      <div className="bg-white rounded-xl border overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "قائمة العملاء" : "Liste des clients"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[480px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3">{tr("Nom", "الاسم")}</th><th className="p-3">{tr("Téléphone", "الهاتف")}</th><th className="p-3 text-end">{tr("Solde dû", "الرصيد المستحق")}</th><th className="p-3 text-end">{tr("Plafond", "السقف")}</th></tr>
+            <tr><th scope="col" className="p-3">{tr("Nom", "الاسم")}</th><th scope="col" className="p-3">{tr("Téléphone", "الهاتف")}</th><th scope="col" className="p-3 text-end">{tr("Solde dû", "الرصيد المستحق")}</th><th scope="col" className="p-3 text-end">{tr("Plafond", "السقف")}</th></tr>
           </thead>
           <tbody>
                        {clients.map(c => (

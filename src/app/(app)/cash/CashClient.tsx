@@ -89,17 +89,22 @@ export default function CashClient({ lang }: { lang: 'fr' | 'ar' }) {
               <button onClick={() => { handleAction('movement', movement); setMovement({ type: 'in', amount: '', reason: '' }); }} className="bg-blue-700 text-white px-3 py-2 rounded text-sm">{tr("Ajouter", "إضافة")}</button>
             </div>
 
-            <div className="max-h-64 overflow-y-auto">
-              <table className="w-full min-w-[480px] text-sm">
+            <div className="store-table-scroll store-cash-movements max-h-64 overflow-auto rounded-lg border" role="region" aria-label={lang === 'ar' ? 'حركات الصندوق' : 'Mouvements de caisse'} tabIndex={0}>
+              <table className="store-data-table w-full min-w-[360px] text-sm">
+                <thead><tr>
+                  <th scope="col" className="px-3 py-2">{tr("Heure", "الوقت")}</th>
+                  <th scope="col" className="px-3 py-2 text-end">{tr("Montant", "المبلغ")}</th>
+                  <th scope="col" className="px-3 py-2">{tr("Motif", "السبب")}</th>
+                </tr></thead>
                 <tbody>
                   {session.movements.map((m: any) => (
                     <tr key={m.id} className="border-b last:border-0">
-                      <td className="py-2 text-gray-500 text-xs">{new Date(m.createdAt).toLocaleTimeString('fr-MA')}</td>
-                      <td className={`py-2 font-semibold ${m.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{m.type === 'in' ? '+' : '-'}{formatMad(m.amount)}</td>
-                      <td className="py-2 text-gray-600">{m.reason}</td>
+                      <td className="px-3 py-2 text-gray-600 text-xs whitespace-nowrap">{new Date(m.createdAt).toLocaleTimeString('fr-MA')}</td>
+                      <td className={`px-3 py-2 text-end whitespace-nowrap font-semibold ${m.type === 'in' ? 'text-green-600' : 'text-red-600'}`}>{m.type === 'in' ? '+' : '-'}{formatMad(m.amount)}</td>
+                      <td className="px-3 py-2 text-gray-700 break-words">{m.reason}</td>
                     </tr>
                   ))}
-                  {session.movements.length === 0 && <tr><td className="py-4 text-center text-gray-400">{tr("Aucun mouvement", "لا توجد حركات")}</td></tr>}
+                  {session.movements.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-gray-600">{tr("Aucun mouvement", "لا توجد حركات")}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -110,10 +115,10 @@ export default function CashClient({ lang }: { lang: 'fr' | 'ar' }) {
       {/* Historique */}
       <div>
         <h2 className="font-semibold mb-3">{tr("Historique des clôtures", "سجل الإغلاقات")}</h2>
-        <div className="bg-white rounded-xl border overflow-x-auto">
-          <table className="w-full min-w-[480px] text-sm">
+        <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "سجل الإغلاقات" : "Historique des clôtures"} tabIndex={0}>
+          <table className="store-data-table w-full min-w-[480px] text-sm">
             <thead className="bg-gray-50 text-start">
-              <tr><th className="p-3">{tr("Date", "التاريخ")}</th><th className="p-3">{tr("Fond", "الرصيد الأولي")}</th><th className="p-3">{tr("Attendu", "المتوقع")}</th><th className="p-3">{tr("Compté", "المبلغ المحسوب")}</th><th className="p-3">{tr("Écart", "الفرق")}</th></tr>
+              <tr><th scope="col" className="p-3">{tr("Date", "التاريخ")}</th><th scope="col" className="p-3">{tr("Fond", "الرصيد الأولي")}</th><th scope="col" className="p-3">{tr("Attendu", "المتوقع")}</th><th scope="col" className="p-3">{tr("Compté", "المبلغ المحسوب")}</th><th scope="col" className="p-3">{tr("Écart", "الفرق")}</th></tr>
             </thead>
             <tbody>
               {history.map(h => (

@@ -135,14 +135,14 @@ export default function PurchasesPage() {
       {/* Historique des Achats */}
       <div>
         <h2 className="font-semibold mb-3">{t.history}</h2>
-        <div className="bg-white rounded-xl border overflow-x-auto">
-          <table className="w-full min-w-[480px] text-sm">
+        <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "سجل المشتريات" : "Historique des achats"} tabIndex={0}>
+          <table className="store-data-table w-full min-w-[480px] text-sm">
             <thead className="bg-gray-50 text-start">
               <tr>
-                <th className="p-3">{t.date}</th>
-                <th className="p-3">{t.supplier}</th>
-                <th className="p-3">{t.articles}</th>
-                <th className="p-3 text-end">{t.total}</th>
+                <th scope="col" className="p-3">{t.date}</th>
+                <th scope="col" className="p-3">{t.supplier}</th>
+                <th scope="col" className="p-3">{t.articles}</th>
+                <th scope="col" className="p-3 text-end">{t.total}</th>
               </tr>
             </thead>
             <tbody>

@@ -59,10 +59,10 @@ export default function AccountingClient({ lang }: { lang: 'fr' | 'ar' }) {
         <div className="bg-white p-4 rounded-xl border"><p className="text-xs text-gray-500">{t.ttc}</p><p className="text-lg font-bold" dir="ltr">{formatMad(data.totals.ttc)}</p></div>
       </div>
 
-      <div className="bg-white rounded-xl border overflow-x-auto">
-        <table className="w-full min-w-[580px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "سجل المبيعات" : "Journal des ventes"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[580px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3">{t.date}</th><th className="p-3">{t.invoice}</th><th className="p-3 whitespace-nowrap text-end">{t.net}</th><th className="p-3 whitespace-nowrap text-end">{t.tax}</th><th className="p-3 whitespace-nowrap text-end">{t.gross}</th></tr>
+            <tr><th scope="col" className="p-3">{t.date}</th><th scope="col" className="p-3">{t.invoice}</th><th scope="col" className="p-3 whitespace-nowrap text-end">{t.net}</th><th scope="col" className="p-3 whitespace-nowrap text-end">{t.tax}</th><th scope="col" className="p-3 whitespace-nowrap text-end">{t.gross}</th></tr>
           </thead>
           <tbody>
             {data.sales.map((s: any) => (

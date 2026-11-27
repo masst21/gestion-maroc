@@ -69,10 +69,10 @@ export default function ExpensesClient({ lang }: { lang: Language }) {
         </label>
         <button disabled={saving} className="bg-red-600 disabled:opacity-50 text-white px-4 py-2 rounded text-sm min-h-10 hover:bg-red-700">{saving ? t.loading : t.add}</button>
       </form>
-      <div className="bg-white rounded-xl border overflow-x-auto">
-        <table className="w-full min-w-[460px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "قائمة المصروفات" : "Liste des dépenses"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[460px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3 text-start">{t.date}</th><th className="p-3 text-start">{t.category}</th><th className="p-3 text-start">{t.description}</th><th className="p-3 text-end">{t.amount}</th></tr>
+            <tr><th scope="col" className="p-3 text-start">{t.date}</th><th scope="col" className="p-3 text-start">{t.category}</th><th scope="col" className="p-3 text-start">{t.description}</th><th scope="col" className="p-3 text-end">{t.amount}</th></tr>
           </thead>
           <tbody>
             {expenses.map(e => (

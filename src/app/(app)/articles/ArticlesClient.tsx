@@ -134,10 +134,10 @@ export default function ArticlesClient({ lang }: { lang: 'fr' | 'ar' }) {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl shadow-sm border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "كتالوج المنتجات" : "Catalogue des articles"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[480px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3">{tr("Image", "الصورة")}</th><th className="p-3">{tr("Référence", "المرجع")}</th><th className="p-3">{tr("Désignation", "التسمية")}</th><th className="p-3 text-end">{tr("Prix HT", "السعر دون ضريبة")}</th><th className="p-3 text-end">{tr("TVA", "الضريبة على القيمة المضافة")}</th><th className="p-3 text-end">{tr("Stock", "المخزون")}</th></tr>
+            <tr><th scope="col" className="p-3">{tr("Image", "الصورة")}</th><th scope="col" className="p-3">{tr("Référence", "المرجع")}</th><th scope="col" className="p-3">{tr("Désignation", "التسمية")}</th><th scope="col" className="p-3 text-end">{tr("Prix HT", "السعر دون ضريبة")}</th><th scope="col" className="p-3 text-end">{tr("TVA", "الضريبة على القيمة المضافة")}</th><th scope="col" className="p-3 text-end">{tr("Stock", "المخزون")}</th></tr>
           </thead>
           <tbody>
             {loading ? (

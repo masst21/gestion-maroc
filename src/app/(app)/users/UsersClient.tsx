@@ -39,10 +39,10 @@ export default function UsersClient({ lang }: { lang: 'fr' | 'ar' }) {
       </form>
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <div className="bg-white rounded-xl border overflow-x-auto">
-        <table className="w-full min-w-[480px] text-sm">
+      <div className="store-table-scroll bg-white rounded-xl border overflow-x-auto" role="region" aria-label={lang === 'ar' ? "قائمة المستخدمين" : "Liste des utilisateurs"} tabIndex={0}>
+        <table className="store-data-table w-full min-w-[480px] text-sm">
           <thead className="bg-gray-50 text-start">
-            <tr><th className="p-3">{tr("Nom", "الاسم")}</th><th className="p-3">{tr("Email", "البريد الإلكتروني")}</th><th className="p-3">{tr("Rôle", "الدور")}</th></tr>
+            <tr><th scope="col" className="p-3">{tr("Nom", "الاسم")}</th><th scope="col" className="p-3">{tr("Email", "البريد الإلكتروني")}</th><th scope="col" className="p-3">{tr("Rôle", "الدور")}</th></tr>
           </thead>
           <tbody>
             {users.map(u => (
