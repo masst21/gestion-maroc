@@ -39,7 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const navItems = allNavItems.filter(item => item.roles.includes(user.role));
 
   return (
-    <div className="store-shell min-h-screen bg-slate-50">
+    <div className="store-shell min-h-screen bg-gray-50">
       <MobileSidebar 
         storeName={user.store.name} 
         userName={user.fullName} 
@@ -53,7 +53,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="flex justify-end px-3 pt-3 sm:px-6">
           <LanguageSwitcher currentLang={lang} />
         </div>
-        <div className="store-content min-w-0 p-3 sm:p-6">
+        <div className="store-content min-w-0 p-3 sm:px-6 sm:pb-6 sm:pt-2">
           {children}
         </div>
       </main>

@@ -43,11 +43,11 @@ export default function MobileSidebar({ storeName, userName, navItems, logoUrl, 
           <button type="button" aria-label={rtl ? 'إغلاق القائمة' : 'Fermer le menu'} onClick={() => setIsOpen(false)}
             className="lg:hidden min-w-11 min-h-11 p-2 text-xl text-blue-100">✕</button>
         </div>
-        <nav aria-label={rtl ? 'القائمة الرئيسية' : 'Menu principal'} className="store-nav flex-1 min-h-0 overflow-y-auto overscroll-contain p-2 space-y-0.5" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <nav aria-label={rtl ? 'القائمة الرئيسية' : 'Menu principal'} className="store-nav flex-1 min-h-0 overflow-y-auto overscroll-contain p-2 space-y-2" style={{ WebkitOverflowScrolling: 'touch' }}>
           {navItems.map(item => (
             <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}
               aria-current={pathname === item.href ? 'page' : undefined}
-              className={`flex items-center gap-2 px-3 py-2 min-h-11 rounded-lg transition text-sm ${pathname === item.href ? 'bg-blue-700 font-semibold ring-1 ring-inset ring-blue-400' : 'hover:bg-blue-800'}`}>
+              className={`flex items-center gap-2 px-3 py-2 min-h-11 rounded-lg transition text-sm ${pathname === item.href ? 'font-semibold' : 'hover:bg-blue-800'}`}>
               <span aria-hidden="true" className="text-base shrink-0">{item.icon}</span>
               <span>{item.label}</span>
             </Link>
