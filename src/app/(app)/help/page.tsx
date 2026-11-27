@@ -1,4 +1,17 @@
+import { cookies } from 'next/headers';
 export default function HelpPage() {
+  if (cookies().get('lang')?.value === 'ar') return (<div className="p-3 sm:p-6 max-w-4xl mx-auto space-y-5 bg-white rounded-xl shadow-sm border">
+  <h1 className="text-2xl font-bold text-blue-900">📖 دليل الاستخدام</h1>
+  <p className="text-gray-500">مرحباً بكم في برنامج إدارة المتجر «متجري».</p>
+  <section><h2 className="font-bold text-lg">١. الإعداد الأولي</h2><p>من الإعدادات، أدخل اسم المتجر والعنوان والهاتف ورابط الشعار.</p></section>
+  <section><h2 className="font-bold text-lg">٢. إضافة المنتجات</h2><p>من صفحة المنتجات، اختر إضافة منتج وأكمل البيانات، أو استورد ملف Excel.</p></section>
+  <section><h2 className="font-bold text-lg">٣. تزويد المخزون</h2><p>من المشتريات، أضف المورد وسجل عملية الشراء لتحديث المخزون.</p></section>
+  <section><h2 className="font-bold text-lg">٤. البيع</h2><p>من نقطة البيع، ابحث عن المنتج وأضفه إلى السلة، ثم اختر العميل عند الحاجة وأكد البيع.</p></section>
+  <section><h2 className="font-bold text-lg">٥. إدارة الصندوق</h2><p>افتح الصندوق وأدخل الرصيد الأولي، وعند الإغلاق احسب النقد الفعلي لمقارنته بالرصيد المتوقع.</p></section>
+  <section><h2 className="font-bold text-lg">٦. العملاء والمستحقات</h2><p>تظهر أرصدة العملاء المستحقة باللون الأحمر. استخدم تذكير واتساب عند توفره.</p></section>
+  <section><h2 className="font-bold text-lg">٧. المحاسبة والزكاة</h2><p>يمكن تصدير سجل المبيعات للمحاسب. حساب الزكاة تقديري ويحتاج إلى مراجعة مختص.</p></section>
+  <div className="bg-blue-50 p-4 rounded-lg"><h3 className="font-bold">💡 نصيحة</h3><p>احتفظ بنسخ احتياطية منتظمة من بيانات المتجر، وصدّر قائمة المنتجات إذا توفر خيار التصدير.</p></div>
+</div>);
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8 bg-white rounded-xl shadow-sm border">
       <div className="border-b pb-4">

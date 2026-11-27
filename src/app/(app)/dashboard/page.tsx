@@ -6,6 +6,8 @@ import Link from 'next/link';
 import DashboardCharts from '@/components/DashboardCharts';
 
 export default async function DashboardPage() {
+  const lang = cookies().get('lang')?.value === 'ar' ? 'ar' : 'fr';
+  const tr = (fr: string, ar: string) => lang === 'ar' ? ar : fr;
   const userId = cookies().get('gm_session')?.value;
   if (!userId) redirect('/login');
 
@@ -44,7 +46,7 @@ export default async function DashboardPage() {
     d.setDate(d.getDate() - i);
     d.setHours(0, 0, 0, 0);
     last7Days.push({
-      date: d.toLocaleDateString('fr-MA', { weekday: 'short', day: 'numeric' }),
+      date: d.toLocaleDateString(lang === 'ar' ? 'ar-MA' : 'fr-MA', { weekday: 'short', day: 'numeric' }),
       dateObj: d,
     });
   }
@@ -72,58 +74,58 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header className="flex justify-between items-center">
+    <div className="min-w-0 p-2 sm:p-4 max-w-7xl mx-auto space-y-6">
+      <header className="flex flex-wrap justify-between items-center gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-          <p className="text-sm text-gray-500">Bienvenue, {user.fullName}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{tr("Tableau de bord", "لوحة القيادة")}</h1>
+          <p className="text-sm text-gray-500">{tr("Bienvenue,", "مرحباً،")} {user.fullName}</p>
         </div>
         <Link href="/pos" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-          + Nouvelle vente
+          {tr("+ Nouvelle vente", "+ عملية بيع جديدة")}
         </Link>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
-          <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">CA du jour</p>
+          <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">{tr("CA du jour", "رقم معاملات اليوم")}</p>
           <p className="text-2xl font-bold text-blue-900">{formatMad(caToday)}</p>
-          <p className="text-xs text-blue-500 mt-2">{salesToday._count} vente(s)</p>
+          <p className="text-xs text-blue-500 mt-2">{salesToday._count} {tr("vente(s)", "عملية بيع")}</p>
         </div>
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-          <p className="text-xs text-emerald-600 font-semibold mb-1 uppercase tracking-wider">CA du mois</p>
+          <p className="text-xs text-emerald-600 font-semibold mb-1 uppercase tracking-wider">{tr("CA du mois", "رقم معاملات الشهر")}</p>
           <p className="text-2xl font-bold text-emerald-900">{formatMad(caMonth)}</p>
-          <p className="text-xs text-emerald-500 mt-2">Depuis le 1er</p>
+          <p className="text-xs text-emerald-500 mt-2">{tr("Depuis le 1er", "من بداية الشهر")}</p>
         </div>
         <div className="bg-white border rounded-xl p-5">
-          <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Caisse actuelle</p>
+          <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">{tr("Caisse actuelle", "الصندوق الحالي")}</p>
           <p className="text-2xl font-bold text-gray-900">{formatMad(cashBalance)}</p>
-          <p className="text-xs text-gray-500 mt-2">{openCashSession ? 'Session ouverte' : 'Caisse fermée'}</p>
+          <p className="text-xs text-gray-500 mt-2">{openCashSession ? tr("Session ouverte", "جلسة مفتوحة") : tr("Caisse fermée", "الصندوق مغلق")}</p>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
-          <p className="text-xs text-orange-600 font-semibold mb-1 uppercase tracking-wider">Dettes Clients</p>
+          <p className="text-xs text-orange-600 font-semibold mb-1 uppercase tracking-wider">{tr("Dettes Clients", "مستحقات العملاء")}</p>
           <p className="text-2xl font-bold text-orange-900">{formatMad(dettesClients)}</p>
-          <p className="text-xs text-orange-500 mt-2">Argent à récupérer</p>
+          <p className="text-xs text-orange-500 mt-2">{tr("Argent à récupérer", "المبالغ المستحقة للتحصيل")}</p>
         </div>
       </div>
 
-      <DashboardCharts data={chartData} />
+      <DashboardCharts data={chartData} lang={lang} />
 
       <div className="bg-white rounded-xl border p-5">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="font-semibold text-gray-900">Dernières ventes</h2>
-          <Link href="/sales" className="text-sm text-blue-600 hover:underline">Voir tout l'historique →</Link>
+        <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+          <h2 className="font-semibold text-gray-900">{tr("Dernières ventes", "آخر المبيعات")}</h2>
+          <Link href="/sales" className="text-sm text-blue-600 hover:underline">{tr("Voir tout l'historique →", "عرض السجل الكامل ←")}</Link>
         </div>
         <div className="space-y-3">
           {recentSales.map(sale => (
-            <div key={sale.id} className="flex justify-between items-center text-sm border-b last:border-0 pb-2">
+            <div key={sale.id} className="flex flex-wrap justify-between items-center gap-2 text-sm border-b last:border-0 pb-2">
               <div>
-                <p className="font-medium text-gray-900">{sale.client?.name || 'Client de passage'}</p>
+                <p className="font-medium text-gray-900">{sale.client?.name || tr("Client de passage", "عميل عابر")}</p>
                 <p className="text-xs text-gray-500">{new Date(sale.saleDate).toLocaleString('fr-MA', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
               <span className="font-semibold">{formatMad(sale.totalTtc)}</span>
             </div>
           ))}
-          {recentSales.length === 0 && <p className="text-sm text-gray-400 text-center py-4">Aucune vente récente</p>}
+          {recentSales.length === 0 && <p className="text-sm text-gray-400 text-center py-4">{tr("Aucune vente récente", "لا توجد مبيعات حديثة")}</p>}
         </div>
       </div>
     </div>
