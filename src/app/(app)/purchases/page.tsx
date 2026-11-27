@@ -81,10 +81,10 @@ export default function PurchasesPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
+    <div className="min-w-0 p-2 sm:p-4 max-w-5xl mx-auto space-y-5">
       <div className="flex flex-wrap justify-between items-center gap-4">
         <h1 className="text-2xl font-bold">{t.purchasesTitle}</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <a href="/api/purchases/export" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm">
             ⬇️ {t.exportExcel}
           </a>
@@ -97,15 +97,15 @@ export default function PurchasesPage() {
 
       {error && <div className="bg-red-50 text-red-600 p-3 rounded">{error}</div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Formulaire Nouveau Fournisseur */}
         <div className="bg-white p-4 rounded-xl border">
           <h2 className="font-semibold mb-3">{t.addSupplier}</h2>
           <form onSubmit={addSupplier} className="flex flex-col gap-2">
             <input required placeholder={t.supplierName} value={newSupplier.name} onChange={e => setNewSupplier({...newSupplier, name: e.target.value})} className="border p-2 rounded" />
-            <div className="flex gap-2">
-              <input placeholder={t.phone} value={newSupplier.phone} onChange={e => setNewSupplier({...newSupplier, phone: e.target.value})} className="border p-2 rounded flex-1" />
-              <input placeholder={t.ice} value={newSupplier.ice} onChange={e => setNewSupplier({...newSupplier, ice: e.target.value})} className="border p-2 rounded flex-1" />
+            <div className="flex flex-wrap gap-2">
+              <input placeholder={t.phone} value={newSupplier.phone} onChange={e => setNewSupplier({...newSupplier, phone: e.target.value})} className="border p-2 rounded flex-1 min-w-0" />
+              <input placeholder={t.ice} value={newSupplier.ice} onChange={e => setNewSupplier({...newSupplier, ice: e.target.value})} className="border p-2 rounded flex-1 min-w-0" />
             </div>
             <button className="bg-blue-700 text-white px-4 py-2 rounded mt-2">{t.addBtn}</button>
           </form>
@@ -123,9 +123,9 @@ export default function PurchasesPage() {
               <option value="">{t.chooseArticle}</option>
               {articles.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <input type="number" required min="1" placeholder={t.qty} value={form.quantity} onChange={e => setForm({...form, quantity: Number(e.target.value)})} className="border p-2 rounded w-24 text-sm" />
-              <input type="number" required min="0" step="0.01" placeholder={t.purchasePrice} value={form.unitCost} onChange={e => setForm({...form, unitCost: Number(e.target.value)})} className="border p-2 rounded flex-1 text-sm" />
+              <input type="number" required min="0" step="0.01" placeholder={t.purchasePrice} value={form.unitCost} onChange={e => setForm({...form, unitCost: Number(e.target.value)})} className="border p-2 rounded flex-1 min-w-0 text-sm" />
             </div>
             <button className="bg-green-600 text-white px-4 py-2 rounded text-sm mt-2">{t.savePurchase}</button>
           </form>
@@ -135,14 +135,14 @@ export default function PurchasesPage() {
       {/* Historique des Achats */}
       <div>
         <h2 className="font-semibold mb-3">{t.history}</h2>
-        <div className="bg-white rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-right rtl:text-right ltr:text-left">
+        <div className="bg-white rounded-xl border overflow-x-auto">
+          <table className="w-full min-w-[480px] text-sm">
+            <thead className="bg-gray-50 text-start">
               <tr>
                 <th className="p-3">{t.date}</th>
                 <th className="p-3">{t.supplier}</th>
                 <th className="p-3">{t.articles}</th>
-                <th className="p-3 text-left rtl:text-left ltr:text-right">{t.total}</th>
+                <th className="p-3 text-end">{t.total}</th>
               </tr>
             </thead>
             <tbody>
@@ -153,7 +153,7 @@ export default function PurchasesPage() {
                   <td className="p-3 text-xs">
                     {p.items.map((i: any) => `${i.quantity}x ${i.article?.name || '-'}`).join(', ')}
                   </td>
-                  <td className="p-3 text-left rtl:text-left ltr:text-right font-semibold">{formatMad(p.totalAmount)}</td>
+                  <td className="p-3 text-end font-semibold">{formatMad(p.totalAmount)}</td>
                 </tr>
               ))}
               {purchases.length === 0 && <tr><td colSpan={4} className="p-6 text-center text-gray-500">{t.noPurchases}</td></tr>}

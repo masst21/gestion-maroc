@@ -7,3 +7,28 @@
     @apply bg-gray-50 text-gray-900;
   }
 }
+
+/* Shared layout and touch behavior for the desktop and mobile application. */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  html[lang="ar"] body { font-family: Tahoma, Arial, sans-serif; }
+}
+@layer components {
+  .store-shell { --store-header-height: calc(3.5rem + env(safe-area-inset-top, 0px)); }
+  .store-mobile-header { height: var(--store-header-height); padding-top: env(safe-area-inset-top, 0px); }
+  .store-main { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .store-content :is(input, select, textarea) { max-width: 100%; }
+  .store-content :is(button, a, input, select, textarea):focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  .store-nav { scrollbar-width: thin; scrollbar-color: #93c5fd #1e3a8a; }
+  @media (max-width: 1023px) {
+    .store-main { padding-top: var(--store-header-height); }
+    .store-content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 16px; min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #store-sidebar { transition: none; }
+  }
+  @media print {
+    .store-mobile-header, #store-sidebar { display: none !important; }
+    .store-main { margin: 0 !important; padding: 0 !important; }
+  }
+}

@@ -106,10 +106,10 @@ export default function PosPage() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] md:h-screen bg-gray-100">
+    <div className="flex flex-col xl:flex-row gap-3 bg-slate-100 rounded-xl min-w-0">
       {showCamera && <CameraScanner onScan={(code) => { setShowCamera(false); handleScan(code); }} onClose={() => setShowCamera(false)} />}
 
-      <div className="flex-1 p-4 md:p-6 flex flex-col overflow-hidden relative">
+      <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col relative">
         <h1 className="text-xl md:text-2xl font-bold mb-4">{lang === 'ar' ? 'نقطة البيع' : 'Point de Vente'}</h1>
         
         {successMessage && <div className="bg-green-100 text-green-800 p-3 rounded-lg mb-4 text-sm font-medium">{successMessage}</div>}
@@ -120,14 +120,14 @@ export default function PosPage() {
             type="text" placeholder={lang === 'ar' ? "امسح أو ابحث عن منتج..." : "Scanner ou rechercher un article..."}
             value={search} onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (search) handleScan(search); } }}
-            className="flex-1 border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-blue-500 outline-none bg-white text-gray-900"
+            className="flex-1 min-w-0 border-2 border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-blue-500 outline-none bg-white text-gray-900"
           />
           <button onClick={() => setShowCamera(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl text-2xl shadow transition-colors">📷</button>
         </div>
 
         {/* Résultats de recherche avec Image */}
         {filteredArticles.length > 0 && !search.includes(' ') && (
-          <div className="absolute top-32 left-4 right-4 md:left-6 md:right-[400px] bg-white border rounded-xl shadow-lg z-10 max-h-80 overflow-y-auto">
+          <div className="relative -mt-4 mb-3 bg-white border rounded-xl shadow-lg z-20 max-h-80 overflow-y-auto">
             {filteredArticles.map(a => (
               <button key={a.id} onClick={() => addToCart(a)} className="w-full text-left rtl:text-right px-4 py-3 hover:bg-blue-50 border-b flex justify-between items-center gap-3">
                 <div className="flex items-center gap-3">
@@ -147,29 +147,29 @@ export default function PosPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border flex-1 flex flex-col overflow-hidden">
-          <div className="p-3 md:p-4 bg-gray-50 border-b font-semibold grid grid-cols-12 gap-2 text-xs md:text-sm text-gray-700">
+        <div className="bg-white rounded-xl shadow-sm border flex-1 flex flex-col overflow-x-auto">
+          <div className="p-3 md:p-4 bg-gray-50 border-b font-semibold grid grid-cols-12 gap-2 min-w-[310px] text-xs md:text-sm text-gray-700">
             <div className="col-span-6">{lang === 'ar' ? 'المنتج' : 'Article'}</div>
             <div className="col-span-2 text-center">{lang === 'ar' ? 'الكمية' : 'Qté'}</div>
-            <div className="col-span-4 text-left rtl:text-left ltr:text-right">{lang === 'ar' ? 'المجموع' : 'Total HT'}</div>
+            <div className="col-span-4 text-end">{lang === 'ar' ? 'المجموع' : 'Total HT'}</div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-2">
+          <div className="flex-1 p-2 min-w-[310px] max-h-[60dvh] overflow-y-auto">
             {cart.map(item => (
               <div key={item.id} className="grid grid-cols-12 gap-2 items-center p-2 border-b last:border-0 hover:bg-gray-50 text-gray-900">
-                <div className="col-span-6 flex items-center gap-2">
+                <div className="col-span-6 min-w-0 flex items-center gap-2">
                   {/* Image dans le panier */}
                   {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.name} className="w-8 h-8 object-cover rounded" />
                   ) : (
                     <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-[10px]">N/A</div>
                   )}
-                  <p className="font-medium text-sm">{item.name}</p>
+                  <p className="font-medium text-sm break-words min-w-0">{item.name}</p>
                 </div>
                 <div className="col-span-2 flex justify-center">
-                  <input type="number" value={item.quantity} onChange={(e) => updateQty(item.id, Number(e.target.value))} className="w-14 md:w-16 border rounded text-center py-1 text-sm" min="1" />
+                  <input type="number" value={item.quantity} onChange={(e) => updateQty(item.id, Number(e.target.value))} className="w-full max-w-16 border rounded text-center py-1 text-sm" min="1" />
                 </div>
-                <div className="col-span-4 text-left rtl:text-left ltr:text-right font-semibold text-sm">{formatMad(item.salePriceHt * item.quantity)}</div>
+                <div className="col-span-4 text-end font-semibold text-sm">{formatMad(item.salePriceHt * item.quantity)}</div>
               </div>
             ))}
             {cart.length === 0 && <div className="text-center text-gray-400 py-10 text-sm">{lang === 'ar' ? 'سلة المشتريات فارغة' : 'Le panier est vide'}</div>}
@@ -177,13 +177,13 @@ export default function PosPage() {
         </div>
       </div>
 
-      <div className="w-full md:w-96 bg-white border-t md:border-t-0 md:border-l rtl:md:border-l-0 rtl:md:border-r shadow-lg p-4 md:p-6 flex flex-col z-10">
+      <div className="w-full xl:w-80 2xl:w-96 shrink-0 bg-white border rounded-xl shadow-sm p-3 sm:p-4 flex flex-col z-10">
         <h2 className="text-lg md:text-xl font-bold mb-4 border-b pb-4 text-gray-900">{lang === 'ar' ? 'الملخص' : 'Résumé'}</h2>
         
         <div className="space-y-2 mb-4 flex-1 text-sm">
           <div className="flex justify-between text-gray-600"><span>{lang === 'ar' ? 'المجموع بدون ضريبة' : 'Total HT'}</span><span>{formatMad(totalHt)}</span></div>
           <div className="flex justify-between text-gray-600"><span>{lang === 'ar' ? 'الضريبة' : 'TVA'}</span><span>{formatMad(totalVat)}</span></div>
-          <div className="flex justify-between text-2xl font-bold text-blue-900 pt-3 border-t"><span>{lang === 'ar' ? 'المجموع مع الضريبة' : 'Total TTC'}</span><span>{formatMad(totalTtc)}</span></div>
+          <div className="flex flex-wrap gap-2 justify-between text-xl font-bold text-blue-900 pt-3 border-t"><span>{lang === 'ar' ? 'المجموع مع الضريبة' : 'Total TTC'}</span><span>{formatMad(totalTtc)}</span></div>
         </div>
 
         <div className="space-y-3 mb-4">
@@ -199,7 +199,7 @@ export default function PosPage() {
               className="w-full border p-3 rounded-lg text-sm text-gray-900" 
             />
             {changeToReturn > 0 && (
-              <div className="mt-2 text-left rtl:text-left ltr:text-right text-sm font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
+              <div className="mt-2 text-end text-sm font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
                 💰 {lang === 'ar' ? 'الباقي للإرجاع' : 'Monnaie à rendre'} : {formatMad(changeToReturn)}
               </div>
             )}

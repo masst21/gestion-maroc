@@ -85,26 +85,26 @@ export default async function DashboardPage() {
         </Link>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <p className="text-xs text-blue-600 font-semibold mb-1 uppercase tracking-wider">{tr("CA du jour", "رقم معاملات اليوم")}</p>
           <p className="text-2xl font-bold text-blue-900">{formatMad(caToday)}</p>
-          <p className="text-xs text-blue-500 mt-2">{salesToday._count} {tr("vente(s)", "عملية بيع")}</p>
+          <p className="text-xs text-blue-700 mt-2">{salesToday._count} {tr("vente(s)", "عملية بيع")}</p>
         </div>
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
           <p className="text-xs text-emerald-600 font-semibold mb-1 uppercase tracking-wider">{tr("CA du mois", "رقم معاملات الشهر")}</p>
           <p className="text-2xl font-bold text-emerald-900">{formatMad(caMonth)}</p>
-          <p className="text-xs text-emerald-500 mt-2">{tr("Depuis le 1er", "من بداية الشهر")}</p>
+          <p className="text-xs text-emerald-700 mt-2">{tr("Depuis le 1er", "من بداية الشهر")}</p>
         </div>
-        <div className="bg-white border rounded-xl p-5">
+        <div className="bg-white border rounded-xl p-4">
           <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">{tr("Caisse actuelle", "الصندوق الحالي")}</p>
           <p className="text-2xl font-bold text-gray-900">{formatMad(cashBalance)}</p>
           <p className="text-xs text-gray-500 mt-2">{openCashSession ? tr("Session ouverte", "جلسة مفتوحة") : tr("Caisse fermée", "الصندوق مغلق")}</p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
           <p className="text-xs text-orange-600 font-semibold mb-1 uppercase tracking-wider">{tr("Dettes Clients", "مستحقات العملاء")}</p>
           <p className="text-2xl font-bold text-orange-900">{formatMad(dettesClients)}</p>
-          <p className="text-xs text-orange-500 mt-2">{tr("Argent à récupérer", "المبالغ المستحقة للتحصيل")}</p>
+          <p className="text-xs text-orange-700 mt-2">{tr("Argent à récupérer", "المبالغ المستحقة للتحصيل")}</p>
         </div>
       </div>
 

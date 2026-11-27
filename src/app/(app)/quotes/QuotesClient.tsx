@@ -59,12 +59,12 @@ export default function QuotesClient({ lang }: { lang: 'fr' | 'ar' }) {
           </select>
           
           {items.map((item, index) => (
-            <div key={index} className="flex gap-2 items-end border-b pb-2">
-              <div className="flex-1"><label className="text-xs">{tr("Description", "الوصف")}</label><input required value={item.description} onChange={e => { const newItems = [...items]; newItems[index].description = e.target.value; setItems(newItems); }} className="w-full border p-2 rounded" /></div>
-              <div className="w-20"><label className="text-xs">{tr("Qté", "الكمية")}</label><input type="number" required value={item.quantity} onChange={e => { const newItems = [...items]; newItems[index].quantity = Number(e.target.value); setItems(newItems); }} className="w-full border p-2 rounded" /></div>
-              <div className="w-32"><label className="text-xs">{tr("Prix HT", "السعر دون ضريبة")}</label><input type="number" required value={item.unitPriceHt} onChange={e => { const newItems = [...items]; newItems[index].unitPriceHt = Number(e.target.value); setItems(newItems); }} className="w-full border p-2 rounded" /></div>
-              <div className="w-20"><label className="text-xs">{tr("TVA %", "الضريبة %")}</label><input type="number" value={item.vatRate} onChange={e => { const newItems = [...items]; newItems[index].vatRate = Number(e.target.value); setItems(newItems); }} className="w-full border p-2 rounded" /></div>
-              <button type="button" onClick={() => setItems(items.filter((_, i) => i !== index))} className="text-red-500 p-2">✕</button>
+            <div key={index} className="grid grid-cols-2 sm:grid-cols-12 gap-2 items-end border-b pb-2">
+              <div className="col-span-2 sm:col-span-5 min-w-0"><label className="text-xs">{tr("Description", "الوصف")}</label><input required value={item.description} onChange={e => { const newItems = [...items]; newItems[index].description = e.target.value; setItems(newItems); }} className="w-full border p-2 rounded" /></div>
+              <div className="sm:col-span-2 min-w-0"><label className="text-xs">{tr("Qté", "الكمية")}</label><input type="number" required value={item.quantity} onChange={e => { const newItems = [...items]; newItems[index].quantity = Number(e.target.value); setItems(newItems); }} className="w-full border p-2 rounded" /></div>
+              <div className="sm:col-span-2 min-w-0"><label className="text-xs">{tr("Prix HT", "السعر دون ضريبة")}</label><input type="number" required value={item.unitPriceHt} onChange={e => { const newItems = [...items]; newItems[index].unitPriceHt = Number(e.target.value); setItems(newItems); }} className="w-full border p-2 rounded" /></div>
+              <div className="sm:col-span-2 min-w-0"><label className="text-xs">{tr("TVA %", "الضريبة %")}</label><input type="number" value={item.vatRate} onChange={e => { const newItems = [...items]; newItems[index].vatRate = Number(e.target.value); setItems(newItems); }} className="w-full border p-2 rounded" /></div>
+              <button type="button" onClick={() => setItems(items.filter((_, i) => i !== index))} className="sm:col-span-1 text-red-600 p-2 min-h-10">✕</button>
             </div>
           ))}
           
@@ -97,8 +97,8 @@ export default function QuotesClient({ lang }: { lang: 'fr' | 'ar' }) {
 
       {/* Modal d'impression du devis */}
       {selectedQuote && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 print:bg-white print:p-0 print:block">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl print:shadow-none print:w-[80mm] print:p-2 print:mx-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-3 z-[60] overflow-y-auto print:bg-white print:p-0 print:block">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto print:max-h-none print:overflow-visible print:shadow-none print:w-[80mm] print:p-2 print:mx-auto">
             <div className="text-center mb-4">
               <h2 className="font-bold text-lg">{tr("MON MAGASIN", "متجري")}</h2>
               <p className="text-sm">{tr("DEVIS N°", "عرض السعر رقم")} {selectedQuote.quoteNo}</p>

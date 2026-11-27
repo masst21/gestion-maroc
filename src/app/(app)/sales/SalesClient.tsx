@@ -54,10 +54,10 @@ export default function SalesClient({ lang }: { lang: 'fr' | 'ar' }) {
 
       {/* Modal Ticket de Caisse */}
       {selectedSale && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 print:bg-white print:p-0 print:block">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-3 z-[60] overflow-y-auto print:bg-white print:p-0 print:block">
           
           {/* Le Ticket avec styles d'impression (80mm) */}
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl print:shadow-none print:rounded-none print:w-[80mm] print:p-2 print:mx-auto print:mt-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto print:max-h-none print:overflow-visible print:shadow-none print:rounded-none print:w-[80mm] print:p-2 print:mx-auto print:mt-4">
             
             {/* En-tête du Ticket */}
             <div className="text-center mb-4">
