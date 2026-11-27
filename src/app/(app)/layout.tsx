@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   });
   if (!user) redirect('/login');
 
-  const lang = (cookies().get('lang')?.value || 'fr') as Language;
+  const lang: Language = cookies().get('lang')?.value === 'ar' ? 'ar' : 'fr';
   const t = dictionaries[lang];
 
   const allNavItems = [
@@ -39,19 +39,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const navItems = allNavItems.filter(item => item.roles.includes(user.role));
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50">
       <MobileSidebar 
         storeName={user.store.name} 
         userName={user.fullName} 
         navItems={navItems} 
         logoUrl={user.store.logoUrl}
+        lang={lang}
+        version={process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'local'}
       />
       
-      <main className="flex-1 w-full md:ml-64 pt-16 md:pt-0 h-screen overflow-y-auto relative">
-        <div className="absolute top-4 right-4 z-50">
+      <main className={`min-w-0 pt-14 lg:pt-0 ${lang === 'ar' ? 'lg:mr-64' : 'lg:ml-64'}`}>
+        <div className="flex justify-end px-3 pt-3 sm:px-6">
           <LanguageSwitcher currentLang={lang} />
         </div>
-        <div className="p-4 md:p-6 pt-16 md:pt-6">
+        <div className="min-w-0 p-3 sm:p-6">
           {children}
         </div>
       </main>
