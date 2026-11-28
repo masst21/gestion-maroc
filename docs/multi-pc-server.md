@@ -1,0 +1,16 @@
+# Mon Magasin : distribution multiposte (candidat)
+ 
+## Poste client Windows
+Installer Mon Magasin Client sur chaque poste (identité d'application distincte de l'installation autonome). Au premier lancement saisir l'origine HTTPS de son serveur : domaine Internet Vercel ou serveur privé doté d'un certificat approuvé. Le menu Serveur > Configuration permet de modifier l'adresse. Aucun identifiant PostgreSQL ni données commerciales dans le client. Chaque utilisateur se connecte avec son compte habituel. HTTP est réservé au loopback local ; ne pas désactiver la vérification TLS pour le LAN. Les téléphones accèdent à la même adresse via navigateur. La caméra doit être testée physiquement.
+ 
+## Serveur Windows ou Linux
+Utiliser l'archive correspondant à l'OS/architecture ; le runtime standalone inclut ses dépendances natives. Installer Node.js 22 et PostgreSQL séparément, ou utiliser PostgreSQL géré. Décompresser dans un répertoire dédié. Copier server.env.example hors du répertoire applicatif, remplir DATABASE_URL avec un rôle dédié, protéger le fichier par ACL du compte de service et vérifier le certificat TLS de la base distante. Ne jamais utiliser les identifiants de l'installation d'origine dans une distribution.
+ 
+- Base existante : vérifier son identité, réaliser une sauvegarde restaurable et valider les migrations dans une copie isolée. Ne pas utiliser l'ancienne migration SQLite ni prisma db push en production. Le lanceur ne migre jamais automatiquement.
+- Base vierge : l'archive fournit schema-fresh.sql généré depuis Prisma, à appliquer uniquement à une base PostgreSQL dédiée et vide, après contrôle. Le provisionnement du premier magasin et du compte administrateur doit encore être intégré et testé ; ne pas utiliser le seed de démonstration en production.
+- Démarrage manuel : node start-server.cjs "C:\\ProgramData\\MonMagasin\\server.env" (Windows), ou node start-server.cjs /etc/monmagasin/server.env (Linux). Le serveur écoute exclusivement sur 127.0.0.1. Le service Windows/Linux automatique reste à créer et valider.
+- Pour plusieurs PC : placer un proxy inverse HTTPS devant le port local, configurer le pare-feu uniquement pour les clients autorisés et faire écraser X-Forwarded-Proto par le proxy. Installer un certificat approuvé par chaque appareil. Ne jamais ouvrir le port PostgreSQL sur Internet. Le proxy doit conserver le Host et limiter les requêtes. Les accès à distance nécessitent VPN ou HTTPS sécurisé.
+- Le client n'est pas un serveur autonome et ne se connecte jamais directement à PostgreSQL. Une installation autonome utilise le même serveur sur le PC, une base locale distincte et un client en loopback.
+ 
+## Mise à jour
+Conserver les anciens binaires et le fichier de configuration séparément, sauvegarder et tester la restauration avant toute migration. Tester une base fictive sur Windows et Linux, vérifier les sessions, deux postes simultanés, le scan Windows/iPhone, les permissions et les données. Ne pas mettre en production tant que la PR sécurité et les corrections de dépendances, l'installation du service, le bootstrap administrateur et ces tests ne sont pas validés. Les paquets de cette branche sont des candidats non signés, pas une version officielle.

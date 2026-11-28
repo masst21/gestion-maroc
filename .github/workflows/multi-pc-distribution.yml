@@ -1,0 +1,65 @@
+name: Multi-PC distribution candidates
+on:
+  push:
+    branches: [feature/multi-pc-server-install]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  client-windows:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: node tests/remote-url.test.cjs
+      - run: node --check electron/remote/main.cjs
+      - run: npx electron-builder --config electron/client-builder.yml --win --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Magasin-Client-Windows-Candidate
+          path: dist-client/*.exe
+          if-no-files-found: error
+  server:
+    strategy:
+      matrix:
+        os: [windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    env:
+      DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: Assemble standalone server, no secrets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path candidate/app -Force | Out-Null
+          Get-ChildItem .next/standalone -Force | Copy-Item -Destination candidate/app -Recurse -Force
+          if (!(Test-Path candidate/app/.next)) { throw 'Missing Next build' }
+          Copy-Item .next/static candidate/app/.next/static -Recurse -Force
+          Copy-Item public candidate/app/public -Recurse -Force
+          Copy-Item deployment/start-server.cjs,deployment/server.env.example,docs/multi-pc-server.md candidate/
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script --output candidate/schema-fresh.sql
+          if ($LASTEXITCODE -ne 0) { throw 'Schema generation failed' }
+          $secretFiles = Get-ChildItem candidate -Recurse -Force -File | Where-Object { $_.Name -match '^\.env($|\.)' }
+          if ($secretFiles) { throw 'Environment file unexpectedly packaged' }
+          if (!(Test-Path candidate/app/server.js)) { throw 'Missing server' }
+          node --check candidate/start-server.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid launcher' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Magasin-Server-${{ matrix.os }}-Candidate
+          path: candidate/
+          include-hidden-files: true
+          if-no-files-found: error
