@@ -1,0 +1,129 @@
+name: Multi-PC distribution candidates
+on:
+  push:
+    branches: [feature/multi-pc-server-install]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  client-windows:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: node tests/remote-url.test.cjs
+      - run: node --check electron/remote/main.cjs
+      - run: npx electron-builder --config electron/client-builder.yml --win --x64 --publish never
+      - name: Verify installer and application entry
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem dist-client/*.exe | Select-Object -First 1
+          if (!$installer) { throw 'Installer missing' }
+          $asar = Get-ChildItem dist-client/win-unpacked/resources/app.asar
+          node -e "const a=require('@electron/asar');const l=a.listPackage(process.argv[1]);if(!l.some(x=>x.endsWith('electron/remote/main.cjs'))||l.some(x=>x.match(/(^|[\\\\/])\.env($|\.)/)||x.includes('prisma/dev.db')))process.exit(1)" $asar.FullName
+          if ($LASTEXITCODE -ne 0) { throw 'Unsafe or incomplete client package' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Magasin-Client-Windows-Candidate
+          path: dist-client/*.exe
+          if-no-files-found: error
+  server:
+    strategy:
+      matrix:
+        os: [windows-2025, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    env:
+      DATABASE_URL: postgresql://build:build@127.0.0.1:5432/build
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: Assemble standalone server, no secrets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path candidate/app -Force | Out-Null
+          Get-ChildItem .next/standalone -Force | Copy-Item -Destination candidate/app -Recurse -Force
+          if (!(Test-Path candidate/app/.next)) { throw 'Missing Next build' }
+          Copy-Item .next/static candidate/app/.next/static -Recurse -Force
+          Copy-Item public candidate/app/public -Recurse -Force
+          # Bootstrap runs outside the Next bundle and needs bcryptjs explicitly.
+          New-Item -ItemType Directory -Path candidate/app/node_modules -Force | Out-Null
+          if (!(Test-Path candidate/app/node_modules/bcryptjs)) {
+            Copy-Item node_modules/bcryptjs candidate/app/node_modules/bcryptjs -Recurse -Force
+          }
+          node -e "require('./candidate/app/node_modules/bcryptjs')"
+          if ($LASTEXITCODE -ne 0) { throw 'Bootstrap dependency missing' }
+          Copy-Item deployment/start-server.cjs,deployment/config.cjs,deployment/setup-server.cjs,deployment/schema-checks.sql,deployment/server.env.example,docs/multi-pc-server.md candidate/
+          Copy-Item deployment/windows,deployment/linux candidate/ -Recurse
+          New-Item -ItemType Directory -Path candidate/runtime -Force | Out-Null
+          $node = (Get-Command node).Source
+          Copy-Item $node candidate/runtime/
+          if ($IsLinux) {
+            chmod +x candidate/runtime/node candidate/linux/install-server.sh
+            sh -n candidate/linux/install-server.sh
+            if ($LASTEXITCODE -ne 0) { throw 'Invalid Linux installer' }
+          }
+          if ($IsWindows) {
+            $tokens = $null; $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Join-Path (Get-Location) 'candidate/windows/Install-Server.ps1'),[ref]$tokens,[ref]$errors) | Out-Null
+            if ($errors.Count) { throw 'Invalid PowerShell installer' }
+          }
+          node --check candidate/setup-server.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid setup' }
+          node --check candidate/config.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid configuration parser' }
+          npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script --output candidate/schema-fresh.sql
+          if ($LASTEXITCODE -ne 0) { throw 'Schema generation failed' }
+          $secretFiles = Get-ChildItem candidate -Recurse -Force -File | Where-Object { $_.Name -match '^\.env($|\.)' }
+          if ($secretFiles) { throw 'Environment file unexpectedly packaged' }
+          if (!(Test-Path candidate/app/server.js)) { throw 'Missing server' }
+          node --check candidate/start-server.cjs
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid launcher' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Magasin-Server-${{ matrix.os }}-Candidate
+          path: candidate/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  fresh-install-restore:
+    runs-on: ubuntu-24.04
+    needs: server
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: installer_test
+          POSTGRES_PASSWORD: test_only_password
+          POSTGRES_DB: install_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U installer_test -d install_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: Mon-Magasin-Server-ubuntu-24.04-Candidate
+          path: candidate
+      - name: Test fresh setup, refuse duplicate, restore and exercise two sessions
+        shell: bash
+        run: |
+          chmod +x candidate/runtime/node
+          bash tests/installer-integration.sh

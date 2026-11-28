@@ -1,0 +1,25 @@
+# Mon Magasin : distribution multiposte (candidat)
+ 
+## Poste client Windows
+Installer Mon Magasin Client sur chaque poste (identité d'application distincte de l'installation autonome). Au premier lancement saisir l'origine HTTPS de son serveur : domaine Internet Vercel ou serveur privé doté d'un certificat approuvé. Le menu Serveur > Configuration permet de modifier l'adresse. Aucun identifiant PostgreSQL ni données commerciales dans le client. Chaque utilisateur se connecte avec son compte habituel. HTTP est réservé au loopback local ; ne pas désactiver la vérification TLS pour le LAN. Les téléphones accèdent à la même adresse via navigateur. La caméra doit être testée physiquement.
+ 
+## Serveur Windows ou Linux
+Utiliser l'archive correspondant à l'OS/architecture ; le runtime standalone inclut ses dépendances natives. Le runtime Node.js 22 est inclus. Installer les outils clients PostgreSQL (psql, pg_dump, pg_restore) et un serveur PostgreSQL dédié, ou utiliser PostgreSQL géré compatible TLS verify-full. Décompresser dans un répertoire dédié. Copier server.env.example hors du répertoire applicatif, remplir DATABASE_URL avec un rôle dédié, protéger le fichier par ACL du compte de service et vérifier le certificat TLS de la base distante. Ne jamais utiliser les identifiants de l'installation d'origine dans une distribution.
+ 
+- Base existante : vérifier son identité, réaliser une sauvegarde restaurable et valider les migrations dans une copie isolée. Ne pas utiliser l'ancienne migration SQLite ni prisma db push en production. Le lanceur ne migre jamais automatiquement.
+- Base vierge : l'archive fournit schema-fresh.sql généré depuis Prisma, à appliquer uniquement à une base PostgreSQL dédiée et vide, après contrôle. L'assistant setup-server.cjs crée le schéma et le premier administrateur dans une transaction, exige la confirmation de l'identité de la base et refuse toute base non vide. Ne jamais exécuter schema-fresh.sql manuellement avant cet assistant.
+- Démarrage manuel : node start-server.cjs "C:\\ProgramData\\MonMagasin\\server.env" (Windows), ou node start-server.cjs /etc/monmagasin/server.env (Linux). Le serveur écoute exclusivement sur 127.0.0.1. Le mode automatique Windows utilise le Planificateur de tâches avec le compte LocalService, et non un service SCM natif. Linux utilise systemd.
+- Pour plusieurs PC : placer un proxy inverse HTTPS devant le port local, configurer le pare-feu uniquement pour les clients autorisés et faire écraser X-Forwarded-Proto par le proxy. Installer un certificat approuvé par chaque appareil. Ne jamais ouvrir le port PostgreSQL sur Internet. Le proxy doit conserver le Host et limiter les requêtes. Les accès à distance nécessitent VPN ou HTTPS sécurisé.
+- Le client n'est pas un serveur autonome et ne se connecte jamais directement à PostgreSQL. Une installation autonome utilise le même serveur sur le PC, une base locale distincte et un client en loopback.
+ 
+## Mise à jour
+Conserver les anciens binaires et le fichier de configuration séparément, sauvegarder et tester la restauration avant toute migration. Tester une base fictive sur Windows et Linux, vérifier les sessions, deux postes simultanés, le scan Windows/iPhone, les permissions et les données. Ne pas mettre en production tant que la PR sécurité et les corrections de dépendances, les essais physiques de démarrage automatique et ces tests ne sont pas validés. Les paquets de cette branche sont des candidats non signés, pas une version officielle.
+
+## Assistant et installation automatique (candidat)
+- Copier server.env.example vers un dossier privé accessible à l'administrateur, compléter la connexion PostgreSQL et le port. Pour une base distante, cette distribution exige sslmode=verify-full et un certificat racine accessible au compte de service.
+- Windows : ouvrir PowerShell administrateur, exécuter .\\windows\\Install-Server.ps1 -ConfigFile "C:\\dossier-prive\\server.env" -Mode new (ou existing). L'installateur refuse de remplacer une installation existante. Il installe une tâche de démarrage automatique, pas un service Windows SCM.
+- Linux : sudo sh linux/install-server.sh /chemin/prive/server.env new (ou existing). Le service systemd utilise un compte dédié non root.
+- Le mode existing vérifie la présence des colonnes et tables attendues et d'un administrateur actif, sans écriture SQL. Si des migrations sont nécessaires, les appliquer séparément sur une copie restaurée d'abord. Aucun déploiement réel automatique.
+- Le mode new nécessite une base PostgreSQL dédiée réellement vide. Le mot de passe administrateur est demandé et masqué. Aucun compte de démonstration.
+- Si une installation échoue, les dossiers protégés peuvent subsister. Ne pas les supprimer aveuglément ; inspecter le statut de la base, du service et de la configuration avant reprise. L'installation de mise à jour in situ reste à finaliser.
+- Les archives sont des candidats non signés. Le test CI utilise une base locale fictive, sauvegarde pg_dump et restauration sur une seconde base, puis deux connexions indépendantes au serveur restauré.

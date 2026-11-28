@@ -1,0 +1,23 @@
+appId: ma.gestion.commerciale.client
+productName: Mon Magasin Client
+directories:
+  output: dist-client
+extraMetadata:
+  main: electron/remote/main.cjs
+  version: 1.1.0
+files:
+  - electron/remote/**/*
+  - package.json
+  - '!node_modules/**/*'
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: src/app/favicon.ico
+  signAndEditExecutable: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+artifactName: Mon-Magasin-Client-${version}-${arch}.${ext}
