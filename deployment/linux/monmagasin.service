@@ -1,0 +1,21 @@
+[Unit]
+Description=Mon Magasin Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=monmagasin
+Group=monmagasin
+WorkingDirectory=/opt/monmagasin
+ExecStart=/opt/monmagasin/runtime/node /opt/monmagasin/start-server.cjs /etc/monmagasin/server.env
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
