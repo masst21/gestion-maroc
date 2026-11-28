@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     prisma.sale.aggregate({ where: { storeId: user.storeId, saleDate: { gte: startOfMonth } }, _sum: { totalTtc: true } }),
     prisma.client.aggregate({ where: { storeId: user.storeId, balance: { gt: 0 } }, _sum: { balance: true } }),
     prisma.cashSession.findFirst({ where: { storeId: user.storeId, status: 'open' }, include: { movements: true } }),
-    prisma.sale.findMany({ where: { storeId: user.storeId }, orderBy: { saleDate: 'desc' }, take: 5, include: { client: true } })
+    prisma.sale.findMany({ where: { storeId: user.storeId }, orderBy: { saleDate: 'desc' }, take: 5, include: { client: { select: { id: true, name: true, phone: true, email: true, ice: true, creditLimit: true, balance: true } } } })
   ]);
 
   const caToday = Number(salesToday._sum.totalTtc || 0);

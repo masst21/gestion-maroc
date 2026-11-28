@@ -77,6 +77,8 @@ model Client {
   phone       String?
   email       String?
   ice         String?
+  address     String?
+  cin         String?
   creditLimit Float    @default(0)
   balance     Float    @default(0)
   isActive    Boolean  @default(true)
@@ -85,6 +87,7 @@ model Client {
   store Store  @relation(fields: [storeId], references: [id])
   sales Sale[]
   quotes Quote[]
+  @@unique([storeId, cin])
 }
 
 model Sale {
