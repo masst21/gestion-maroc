@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import SupplierAging from './SupplierAging';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,10 +63,7 @@ export default async function AgedBalancePage() {
         </table>
       </div>
       {unassigned > 0 && <p className="text-amber-900 text-sm">{tr('Restes dus sans client identifié, non répartis :','مبالغ متبقية دون عميل محدد وغير موزعة:')} <span dir="ltr">{money(unassigned)}</span></p>}
-      <section className="bg-white border rounded-xl p-4 space-y-2">
-        <h2 className="font-semibold">{tr('Dettes fournisseurs','ديون الموردين')}</h2>
-        <p className="text-sm text-gray-700">{tr('Non calculables avec les données actuelles : les achats ne comportent pas encore de montants réglés ni d’échéances. Aucun solde fictif n’est affiché.', 'لا يمكن حسابها بالبيانات الحالية: لا تتضمن المشتريات مبالغ مدفوعة أو تواريخ استحقاق. لا يتم عرض رصيد افتراضي.')}</p>
-      </section>
+      <SupplierAging storeId={user.storeId} lang={lang} />
     </div>
   );
 }

@@ -1,0 +1,9 @@
+# Supplier ledger — safe PostgreSQL rollout
+
+This feature adds three tables without altering historical purchases or existing supplier rows. The old migration history in prisma/migrations is SQLite, whereas the live schema is PostgreSQL. Do NOT use prisma migrate reset, db push --accept-data-loss, or the SQLite migration history against the production database.
+
+1. Verify target database, schema, actual deployed Supplier table, primary keys and permissions. Take a restorable backup and test its restoration in an isolated PostgreSQL database.
+2. On the isolated copy only, execute prisma/postgresql-upgrades/20261128_supplier_ledger.sql with psql -v ON_ERROR_STOP=1. It runs in a transaction and fails if tables already exist. Verify all three tables, indexes and foreign keys.
+3. Generate Prisma client, build, and test supplier creation/edit, invoice uniqueness, partial payment, overpayment rejection, same-currency settlement, reference rate failure, access control across stores and supplier aging. Check legacy supplier, purchase and import features.
+4. Only after verification and approval, apply the same SQL on the backed-up production database, then deploy this feature. Do not deploy a build requiring these tables before the database upgrade. The previous build remains usable after additive upgrade.
+5. Existing purchases are deliberately not assumed unpaid. Enter or reconcile actual supplier invoices separately; the invoice ledger does not alter inventory, cash, bank or general ledger. Payments must be in the invoice currency. MAD equivalents use a recorded current reference rate, not the historical transaction-day rate or actual bank exchange rate. Accounting FX adjustments and credit notes are not implemented. Rollback application code first; do not drop populated ledger tables.
