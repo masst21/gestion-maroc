@@ -1,3 +1,4 @@
+import { sessionUserId } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { Prisma } from '@prisma/client';
@@ -19,7 +20,7 @@ function articleData(v:Values): Prisma.ArticleUpdateInput {
 }
 export async function importCatalog(req:Request, kind:Catalog) {
   try {
-    const id=cookies().get('gm_session')?.value;
+    const id=await sessionUserId();
     if(!id)return fail('UNAUTHORIZED',401);
     const user=await prisma.user.findFirst({where:{id,isActive:true}});
     if(!user)return fail('UNAUTHORIZED',401);

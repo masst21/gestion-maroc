@@ -43,6 +43,7 @@ model User {
   createdAt DateTime @default(now())
 
   store Store @relation(fields: [storeId], references: [id])
+  sessions AuthSession[]
 }
 
 model Article {
@@ -230,4 +231,13 @@ model QuoteItem {
   lineTotalTtc Float
 
   quote        Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+}
+model AuthSession {
+  tokenHash String @id
+  userId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
 }

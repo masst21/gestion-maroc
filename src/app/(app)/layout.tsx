@@ -1,3 +1,4 @@
+import { sessionUserId } from '@/lib/session';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
@@ -6,7 +7,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { dictionaries, Language } from '@/lib/dictionaries';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
   if (!userId) redirect('/login');
 
   const user = await prisma.user.findUnique({

@@ -1,3 +1,4 @@
+import { sessionUserId } from '@/lib/session';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
@@ -9,7 +10,7 @@ import DailyWidget from '@/components/DailyWidget';
 export default async function DashboardPage() {
   const lang = cookies().get('lang')?.value === 'ar' ? 'ar' : 'fr';
   const tr = (fr: string, ar: string) => lang === 'ar' ? ar : fr;
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
   if (!userId) redirect('/login');
 
   const user = await prisma.user.findUnique({
