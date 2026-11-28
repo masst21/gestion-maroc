@@ -15,6 +15,8 @@ install -d -m 0755 /opt/monmagasin
 cp -a "$root/." /opt/monmagasin/
 chown -R root:root /opt/monmagasin
 chmod -R go-w /opt/monmagasin
+install -d -m 0750 -o monmagasin -g monmagasin /opt/monmagasin/app/.next/cache
+chown -R monmagasin:monmagasin /opt/monmagasin/app/.next/cache
 /opt/monmagasin/runtime/node /opt/monmagasin/setup-server.cjs /etc/monmagasin/server.env "$2"
 install -m 0644 /opt/monmagasin/linux/monmagasin.service /etc/systemd/system/monmagasin.service
 systemctl daemon-reload

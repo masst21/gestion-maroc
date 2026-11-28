@@ -57,6 +57,13 @@ jobs:
           if (!(Test-Path candidate/app/.next)) { throw 'Missing Next build' }
           Copy-Item .next/static candidate/app/.next/static -Recurse -Force
           Copy-Item public candidate/app/public -Recurse -Force
+          # Bootstrap runs outside the Next bundle and needs bcryptjs explicitly.
+          New-Item -ItemType Directory -Path candidate/app/node_modules -Force | Out-Null
+          if (!(Test-Path candidate/app/node_modules/bcryptjs)) {
+            Copy-Item node_modules/bcryptjs candidate/app/node_modules/bcryptjs -Recurse -Force
+          }
+          node -e "require('./candidate/app/node_modules/bcryptjs')"
+          if ($LASTEXITCODE -ne 0) { throw 'Bootstrap dependency missing' }
           Copy-Item deployment/start-server.cjs,deployment/config.cjs,deployment/setup-server.cjs,deployment/schema-checks.sql,deployment/server.env.example,docs/multi-pc-server.md candidate/
           Copy-Item deployment/windows,deployment/linux candidate/ -Recurse
           New-Item -ItemType Directory -Path candidate/runtime -Force | Out-Null
