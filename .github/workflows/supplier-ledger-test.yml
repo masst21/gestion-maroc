@@ -1,7 +1,7 @@
-name: Supplier ledger PostgreSQL test
+name: Combined supplier and client PostgreSQL upgrades
 on:
   push:
-    branches: [test/supplier-ledger-postgres]
+    branches: [test/combined-postgres-upgrades]
   workflow_dispatch:
 permissions:
   contents: read
@@ -36,14 +36,16 @@ jobs:
         run: npm ci
       - name: Recreate previous schema on isolated database
         run: |
-          git fetch --depth=1 origin bf76044cfd6e10ad119fa01081d19319ae9098fa
+          git fetch --depth=1 origin e133afcc310a4631ff9fa735b0cb02d6f5ddeb11
           git show FETCH_HEAD:prisma/schema.prisma > prisma/test-before.prisma
           npx prisma db push --schema prisma/test-before.prisma --skip-generate
       - name: Seed legacy data and apply upgrade
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/supplier-ledger-before.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f prisma/postgresql-upgrades/20261128_supplier_ledger.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f prisma/postgresql-upgrades/20261128_client_identity.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/supplier-ledger-after.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/client-identity-after.sql
       - name: Check Prisma schema
         run: |
           npx prisma validate
