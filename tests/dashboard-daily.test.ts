@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {cityById,localParts,nextDate,nextPrayer,parseSchedule} from '../src/lib/dashboardDaily';
+assert.equal(cityById('agadir')?.fr,'Agadir');
+assert.equal(cityById('invalid'),undefined);
+assert.equal(nextDate('2026-12-31'),'2027-01-01');
+assert.equal(localParts(new Date('2026-11-28T23:30:00Z')).date,'2026-11-29');
+const today=parseSchedule({Fajr:'06:20',Sunrise:'07:50',Dhuhr:'13:20',Asr:'16:10',Maghrib:'18:40',Isha:'20:00'});
+assert.ok(today);
+assert.equal(parseSchedule({...today,Isha:'99:99'}),null);
+assert.equal(nextPrayer(new Date('2026-11-28T06:00:00Z'),today,today)?.key,'Dhuhr');
+assert.equal(nextPrayer(new Date('2026-11-28T20:00:00Z'),today,today)?.key,'Fajr');
+assert.equal(nextPrayer(new Date('2026-11-28T20:00:00Z'),today,today)?.seconds,33600);
+console.log('Daily widget date and prayer tests passed');

@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 import {cityById,localParts,nextDate,parseSchedule,TZ,type DailyData} from '@/lib/dashboardDaily';
-export const dynamic='force-dynamic';
+// Request URL makes this route dynamic; upstream fetches use the Next.js data cache.
 async function json(url:string,seconds:number,headers?:Record<string,string>){
  const r=await fetch(url,{headers,next:{revalidate:seconds},signal:AbortSignal.timeout(7000)});
  if(!r.ok)throw new Error('UPSTREAM');return r.json();
