@@ -24,6 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/sales', label: t.sales, icon: '🧾', roles: ['admin', 'manager', 'cashier', 'accountant'] },
     { href: '/articles', label: t.articles, icon: '📦', roles: ['admin', 'manager'] },
     { href: '/purchases', label: t.purchases, icon: '🚚', roles: ['admin', 'manager'] },
+    { href: '/suppliers', label: lang === 'ar' ? 'الموردون' : 'Fournisseurs', icon: '🏢', roles: ['admin', 'manager', 'accountant'] },
     { href: '/quotes', label: t.quotes, icon: '📝', roles: ['admin', 'manager', 'cashier'] },
     { href: '/expenses', label: t.expenses, icon: '💸', roles: ['admin', 'manager', 'accountant'] },
     { href: '/clients', label: t.clients, icon: '👥', roles: ['admin', 'manager', 'cashier'] },
