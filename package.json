@@ -1,6 +1,6 @@
 {
   "name": "gestion-maroc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "dist:win": "npm run build && electron-builder --win --x64"
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "dist:win:portable": "npm run build && electron-builder --win --x64 --dir --publish never"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
@@ -47,9 +48,8 @@
       "output": "dist"
     },
     "files": [
-      "electron/**/*",
-      ".next/**/*",
-      "public/**/*",
+      "electron/main.js",
+      "electron/preload.js",
       "package.json"
     ],
     "extraResources": [
@@ -84,7 +84,7 @@
           ]
         }
       ],
-      "icon": "electron/icon.ico",
+      "icon": "src/app/favicon.ico",
       "signAndEditExecutable": false
     },
     "nsis": {
