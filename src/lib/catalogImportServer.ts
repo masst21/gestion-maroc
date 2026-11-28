@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import * as XLSX from 'xlsx';
 import { parseNumber } from '@/lib/purchaseImport';
+import {normalizeCin,validCin} from '@/lib/clientIdentity';
 import { columns, catalogMapping, validCatalogMapping, type Catalog } from '@/lib/catalogImport';
 
 const fail=(error:string,status=400)=>NextResponse.json({error},{status});
@@ -63,7 +64,7 @@ export async function importCatalog(req:Request, kind:Catalog) {
         } else {
           const name=String(v.name),ice=typeof v.ice==='string'?v.ice:undefined;
           const where={storeId,OR:[{name:{equals:name,mode:'insensitive' as const}},...(ice?[{ice}]:[])]};
-          const existing=kind==='clients'?await db.client.findFirst({where,select:{id:true}}):await db.supplier.findFirst({where,select:{id:true}});
+          const existing=kind==='clients'?await db.client.findFirst({where:{...where,OR:[...where.OR,...(v.cin?[{cin:String(v.cin)}]:[])]},select:{id:true}}):await db.supplier.findFirst({where,select:{id:true}});
           if(existing)issues.push({line:row.line,reason:'DUPLICATE'});
         }
       }
@@ -83,11 +84,12 @@ export async function importCatalog(req:Request, kind:Catalog) {
           v[c.key]=numeric;
         } else {
           if((c.max&&s.length>c.max)||(c.type==='ice'&&!/^\d{15}$/.test(s))||(c.type==='email'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))){issues.push({line,reason:'FORMAT',field:c.key});invalid=true;continue;}
-          v[c.key]=s;
+          if(c.key==='cin'&&!validCin(normalizeCin(s))){issues.push({line,reason:'FORMAT',field:c.key});invalid=true;continue;}
+          v[c.key]=c.key==='cin'?normalizeCin(s):s;
         }
       }
       if(invalid)continue;
-      const keys=kind==='articles'?['ref:'+String(v.reference)]:['name:'+String(v.name).toLowerCase(),...(v.ice?['ice:'+v.ice]:[])];
+      const keys=kind==='articles'?['ref:'+String(v.reference)]:['name:'+String(v.name).toLowerCase(),...(v.ice?['ice:'+v.ice]:[]),...(v.cin?['cin:'+v.cin]:[])];
       if(keys.some(k=>seen.has(k))){issues.push({line,reason:'DUPLICATE_FILE'});continue;}
       keys.forEach(k=>seen.add(k));rows.push({line,values:v,action:'create'});
     }
@@ -109,7 +111,7 @@ export async function importCatalog(req:Request, kind:Catalog) {
           else await tx.article.create({data:{storeId,reference:String(v.reference),name:String(v.name),nameAr:typeof v.nameAr==='string'?v.nameAr:undefined,barcode:typeof v.barcode==='string'?v.barcode:undefined,category:typeof v.category==='string'?v.category:undefined,purchasePrice:typeof v.purchasePrice==='number'?v.purchasePrice:undefined,salePriceHt:typeof v.salePriceHt==='number'?v.salePriceHt:undefined,vatRate:typeof v.vatRate==='number'?v.vatRate:undefined,stockQty:typeof v.stockQty==='number'?v.stockQty:undefined,stockMin:typeof v.stockMin==='number'?v.stockMin:undefined}});
         } else {
           const common={storeId,name:String(v.name),phone:typeof v.phone==='string'?v.phone:undefined,ice:typeof v.ice==='string'?v.ice:undefined};
-          if(kind==='clients')await tx.client.create({data:{...common,email:typeof v.email==='string'?v.email:undefined,creditLimit:typeof v.creditLimit==='number'?v.creditLimit:undefined}});
+          if(kind==='clients')await tx.client.create({data:{...common,cin:typeof v.cin==='string'?v.cin:undefined,address:typeof v.address==='string'?v.address:undefined,email:typeof v.email==='string'?v.email:undefined,creditLimit:typeof v.creditLimit==='number'?v.creditLimit:undefined}});
           else await tx.supplier.create({data:common});
         }
       }

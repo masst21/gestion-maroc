@@ -9,7 +9,9 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
-    "dist:win": "npm run build && electron-builder --win --x64"
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "prebuild": "node scripts/prepare-ocr.cjs",
+    "predev": "node scripts/prepare-ocr.cjs"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
