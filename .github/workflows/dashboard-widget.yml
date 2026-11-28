@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   responsive-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
       postgres:
@@ -38,8 +38,11 @@ jobs:
       - name: Seed synthetic store
         run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/dashboard-widget-fixture.sql
       - run: npm run build
-      - run: npm install --no-save --package-lock=false @playwright/test@1.51.1
-      - run: npx playwright install --with-deps chromium webkit
+      - name: Install isolated Playwright tools
+        run: |
+          mkdir -p "$RUNNER_TEMP/widget-playwright"
+          npm install --prefix "$RUNNER_TEMP/widget-playwright" --no-audit --no-fund --save-exact @playwright/test@1.51.1
+          "$RUNNER_TEMP/widget-playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
       - name: Browser compatibility (desktop and iPhone emulation)
         run: |
           mkdir -p .next/standalone/.next
@@ -51,7 +54,8 @@ jobs:
             if curl -fsS http://127.0.0.1:3100/login >/dev/null; then break; fi
             sleep 1
           done
-          node tests/dashboard-widget-browser.mjs
+          cp tests/dashboard-widget-browser.mjs "$RUNNER_TEMP/widget-playwright/dashboard-widget-browser.mjs"
+          node "$RUNNER_TEMP/widget-playwright/dashboard-widget-browser.mjs"
   windows-build:
     runs-on: windows-latest
     timeout-minutes: 20
