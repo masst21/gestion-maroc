@@ -1,10 +1,12 @@
+import { sessionUserId } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 
 // Récupérer la session ouverte et ses mouvements
 export async function GET() {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
+  if (!userId) return NextResponse.json({error:'Unauthorized'},{status:401});
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -25,7 +27,8 @@ export async function GET() {
 
 // Actions : Ouvrir, Fermer, Ajouter mouvement
 export async function POST(req: Request) {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
+  if (!userId) return NextResponse.json({error:'Unauthorized'},{status:401});
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

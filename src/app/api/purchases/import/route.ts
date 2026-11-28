@@ -1,3 +1,4 @@
+import { sessionUserId } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
@@ -11,7 +12,7 @@ type ImportRow = { line: number; supplier: string; reference: string; quantity: 
 
 export async function POST(req: Request) {
   try {
-    const id = cookies().get('gm_session')?.value;
+    const id = await sessionUserId();
     if (!id) return fail('Unauthorized',401);
     const user = await prisma.user.findFirst({ where: { id, isActive: true } });
     if (!user) return fail('Unauthorized',401);
