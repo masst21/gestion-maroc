@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { formatMad } from '@/lib/utils';
 import Link from 'next/link';
 import DashboardCharts from '@/components/DashboardCharts';
+import DailyWidget from '@/components/DailyWidget';
 
 export default async function DashboardPage() {
   const lang = cookies().get('lang')?.value === 'ar' ? 'ar' : 'fr';
@@ -84,6 +85,8 @@ export default async function DashboardPage() {
           {tr("+ Nouvelle vente", "+ عملية بيع جديدة")}
         </Link>
       </header>
+
+      <DailyWidget lang={lang} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">

@@ -1,0 +1,74 @@
+name: Daily dashboard widget verification
+on:
+  push:
+    branches: [feature/dashboard-daily-widget]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  responsive-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: widget_test
+          POSTGRES_PASSWORD: local_test_only
+          POSTGRES_DB: widget_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U widget_test -d widget_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://widget_test:local_test_only@127.0.0.1:5432/widget_test
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npx tsx tests/dashboard-daily.test.ts
+      - run: npx prisma db push --skip-generate
+      - name: Seed synthetic store
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/dashboard-widget-fixture.sql
+      - run: npm run build
+      - name: Install isolated Playwright tools
+        run: |
+          mkdir -p "$RUNNER_TEMP/widget-playwright"
+          npm install --prefix "$RUNNER_TEMP/widget-playwright" --no-audit --no-fund --save-exact @playwright/test@1.51.1
+          "$RUNNER_TEMP/widget-playwright/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Browser compatibility (desktop and iPhone emulation)
+        run: |
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/static
+          HOSTNAME=127.0.0.1 PORT=3100 node .next/standalone/server.js > /tmp/widget.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true; cat /tmp/widget.log' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3100/login >/dev/null; then break; fi
+            sleep 1
+          done
+          cp tests/dashboard-widget-browser.mjs "$RUNNER_TEMP/widget-playwright/dashboard-widget-browser.mjs"
+          node "$RUNNER_TEMP/widget-playwright/dashboard-widget-browser.mjs"
+  windows-build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://widget_test:local_test_only@127.0.0.1:5432/widget_test
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npx tsx tests/dashboard-daily.test.ts
+      - run: npm run build
