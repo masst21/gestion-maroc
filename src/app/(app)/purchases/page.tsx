@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { formatMad } from '@/lib/utils';
 import { dictionaries, Language } from '@/lib/dictionaries';
+import PurchaseImport from './PurchaseImport';
 
 export default function PurchasesPage() {
   const [lang, setLang] = useState<Language>('fr');
@@ -12,7 +13,6 @@ export default function PurchasesPage() {
   const [form, setForm] = useState({ supplierId: '', articleId: '', quantity: 1, unitCost: 0 });
   const [newSupplier, setNewSupplier] = useState({ name: '', phone: '', ice: '' });
   const [error, setError] = useState('');
-  const [importing, setImporting] = useState(false);
   const [savingSupplier, setSavingSupplier] = useState(false);
   const [savingPurchase, setSavingPurchase] = useState(false);
   const [notice, setNotice] = useState('');
@@ -82,26 +82,6 @@ export default function PurchasesPage() {
     finally { setSavingPurchase(false); }
   }
 
-  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImporting(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const res = await fetch('/api/purchases/import', { method: 'POST', body: formData });
-    const data = await res.json();
-
-    if (res.ok) {
-      alert(`✅ ${lang === 'ar' ? 'تم الاستيراد بنجاح!' : 'Importation réussie !'}\n${data.imported} ${lang === 'ar' ? 'سطر تمت معالجته.' : 'lignes traitées.'}\n${data.errors} ${lang === 'ar' ? 'أخطاء.' : 'erreurs.'}`);
-      loadData();
-    } else {
-      alert(lang === 'ar' ? 'خطأ في الاستيراد' : 'Erreur lors de l\'importation');
-    }
-    setImporting(false);
-    e.target.value = '';
-  }
 
   return (
     <div className="min-w-0 p-2 sm:p-4 max-w-5xl mx-auto space-y-5">
@@ -111,16 +91,15 @@ export default function PurchasesPage() {
           <a href="/api/purchases/export" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm">
             ⬇️ {t.exportExcel}
           </a>
-          <label className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm cursor-pointer">
-            {importing ? (lang === 'ar' ? 'جاري الاستيراد...' : 'Importation...') : `⬆️ ${t.importExcel}`}
-            <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImport} disabled={importing} />
-          </label>
+
         </div>
       </div>
 
       {error && <div role="alert" className="bg-red-50 text-red-600 p-3 rounded">{error}</div>}
       {notice && <div role="status" className="bg-green-50 text-green-800 p-3 rounded">{notice}</div>}
       {loadError && <div role="alert" className="bg-amber-50 text-amber-900 p-3 rounded">{lang === 'ar' ? 'تعذر تحميل بعض البيانات' : 'Certaines données n’ont pas pu être chargées.'} <button type="button" onClick={loadData} className="underline">{lang === 'ar' ? 'إعادة المحاولة' : 'Réessayer'}</button></div>}
+
+      <PurchaseImport lang={lang} onImported={loadData} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Formulaire Nouveau Fournisseur */}
