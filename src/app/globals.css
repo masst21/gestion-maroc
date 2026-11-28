@@ -7,3 +7,130 @@
     @apply bg-gray-50 text-gray-900;
   }
 }
+
+/* Shared layout and touch behavior for the desktop and mobile application. */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  html[lang="ar"] body { font-family: Tahoma, Arial, sans-serif; }
+}
+@layer components {
+  .store-shell { --store-header-height: calc(3.5rem + env(safe-area-inset-top, 0px)); }
+  .store-mobile-header { height: var(--store-header-height); padding-top: env(safe-area-inset-top, 0px); }
+  .store-main { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .store-content :is(input, select, textarea) { max-width: 100%; }
+  .store-content :is(button, a, input, select, textarea):focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  .store-nav { scrollbar-width: thin; scrollbar-color: #93c5fd #1e3a8a; }
+  @media (max-width: 1023px) {
+    .store-main { padding-top: var(--store-header-height); }
+    .store-content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 16px; min-width: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #store-sidebar { transition: none; }
+  }
+  @media print {
+    .store-mobile-header, #store-sidebar { display: none !important; }
+    .store-main { margin: 0 !important; padding: 0 !important; }
+  }
+}
+
+
+/* Desktop reference theme shared by the web and touch interfaces. */
+@media screen {
+  .store-shell {
+    --store-table-head: #203b55;
+    --store-table-even: #d6e4ef;
+    --store-table-odd-alt: #f3f6fa;
+    --store-table-even-alt: #e0ebf3;
+    --store-table-border: #8a9eaf;
+    background: #f9fafb;
+  }
+  .store-nav { scrollbar-color: #aab5c2 #e9edf2; }
+  .store-nav > a {
+    background: linear-gradient(180deg, #3d6097, #23477d);
+    border: 1px solid #6482a8;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 2px 0 #102b50, 0 3px 4px rgba(0,0,0,.15);
+    color: #fff;
+    min-height: 44px;
+    font-weight: 500;
+  }
+  .store-nav > a:hover { background: linear-gradient(180deg, #4b70aa, #2b538a); }
+  .store-nav > a[aria-current="page"] {
+    background: linear-gradient(180deg, #ffe7a7, #ebcd80);
+    border-color: #cba34c;
+    color: #172033;
+    box-shadow: inset 0 1px 0 #fff2c5, 0 2px 0 #8d7337, 0 3px 4px rgba(0,0,0,.15);
+  }
+  .store-logout {
+    background: linear-gradient(180deg, #3d568c, #253e76);
+    border: 1px solid #6880aa;
+    box-shadow: 0 2px 0 #132c54;
+    min-height: 40px;
+  }
+  .store-content table { border-collapse: separate; border-spacing: 0; }
+  .store-content table thead th {
+    background: var(--store-table-head);
+    color: #fff;
+    font-weight: 600;
+    border-block-end: 1px solid #102c44;
+    text-align: start;
+  }
+  .store-content table th.text-end { text-align: end; }
+  .store-content table :is(th, td) {
+    border-inline-end: 1px solid var(--store-table-border);
+    border-block-end: 1px solid var(--store-table-border);
+    vertical-align: middle;
+  }
+  .store-content table :is(th, td):last-child { border-inline-end: 0; }
+  .store-content table tbody tr:nth-child(odd) > td { background: #fff; }
+  .store-content table tbody tr:nth-child(odd) > td:nth-child(even) { background: var(--store-table-odd-alt); }
+  .store-content table tbody tr:nth-child(even) > td { background: var(--store-table-even); }
+  .store-content table tbody tr:nth-child(even) > td:nth-child(even) { background: var(--store-table-even-alt); }
+  .store-content table tbody tr:hover > td { background: #eaf1f8; }
+  .store-content :is(button,a,label):is(.bg-blue-600,.bg-blue-700,.bg-green-600,.bg-gray-700,.bg-red-600) {
+    border: 1px solid rgba(30,41,59,.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 3px 0 #475569, 0 4px 5px rgba(15,23,42,.12);
+    background-image: linear-gradient(180deg, rgba(255,255,255,.15), rgba(0,0,0,.10));
+  }
+  .store-content :is(button,a,label):is(.bg-blue-600,.bg-blue-700,.bg-green-600,.bg-gray-700,.bg-red-600):active {
+    transform: translateY(1px); box-shadow: 0 1px 0 #475569;
+  }
+  .store-lang { gap: 2px; padding: 0; background: transparent; border: 0; }
+  .store-lang button { border: 1px solid #a5afbd; box-shadow: 0 2px 0 #536477; background: linear-gradient(#fafbfc,#e5e7eb); }
+  .store-lang button[aria-pressed="true"] { background: linear-gradient(#fff,#f3f6fa); color: #1e3a8a; font-weight: 600; }
+  @media (min-width: 1024px) {
+    .store-nav > a { min-height: 48px; }
+    .store-content table :is(th,td) { padding-block: .85rem; }
+  }
+  @media (max-width: 1023px) {
+    .store-content table :is(th,td) { padding-block: .65rem; }
+  }
+}
+
+
+/* Unified data tables, including the cash movements and POS grid. */
+@media screen {
+  .store-table-scroll { max-width: 100%; overscroll-behavior-inline: contain; -webkit-overflow-scrolling: touch; }
+  .store-table-scroll:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+  .store-data-table { font-variant-numeric: tabular-nums; }
+  .store-data-table :is(th,td) { overflow-wrap: anywhere; }
+  .store-data-table td.text-end { white-space: nowrap; overflow-wrap: normal; }
+  .store-data-table thead th { vertical-align: middle; }
+  .store-cash-movements thead th { position: sticky; top: 0; z-index: 1; }
+  .store-cart-head { background: var(--store-table-head); color: #fff; border-block-end: 1px solid #102c44; }
+  .store-cart-row { border-block-end: 1px solid var(--store-table-border); font-variant-numeric: tabular-nums; }
+  .store-cart-row:nth-child(odd) { background: #fff; }
+  .store-cart-row:nth-child(even) { background: var(--store-table-even); }
+  .store-cart-row:hover { background: #eaf1f8; }
+  .store-cart-head > :not(:last-child), .store-cart-row > :not(:last-child) { border-inline-end: 1px solid var(--store-table-border); padding-inline-end: .35rem; }
+  .store-cart-row > :last-child { overflow-wrap: anywhere; }
+}
+@media print { .store-table-scroll { overflow: visible !important; max-height: none !important; } }
+
+/* Currency rates: independent scrolling area, with persistent column headers. */
+@media screen {
+  .store-currencies-scroll { position: relative; max-height: 45vh; max-height: 45dvh; overflow: auto; overscroll-behavior: contain; scrollbar-width: auto; scrollbar-color: #8a9eaf #eef2f6; }
+  .store-currencies-scroll thead th { position: sticky; top: 0; z-index: 2; background: #203b55; color: #fff; }
+  .store-currencies-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+  .store-currencies-scroll::-webkit-scrollbar-thumb { background: #8a9eaf; border-radius: 5px; border: 2px solid #eef2f6; }
+  .store-currencies-scroll::-webkit-scrollbar-track { background: #eef2f6; }
+}
