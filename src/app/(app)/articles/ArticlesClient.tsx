@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import CatalogImport from '@/components/CatalogImport';
 
 type Article = {
   id: string; reference: string; name: string; imageUrl: string | null;
@@ -15,7 +16,6 @@ export default function ArticlesClient({ lang }: { lang: 'fr' | 'ar' }) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [importing, setImporting] = useState(false);
   
   const [form, setForm] = useState({ 
     reference: '', name: '', salePriceHt: '', vatRate: '20', stockQty: '', imageUrl: '' 
@@ -73,20 +73,6 @@ export default function ArticlesClient({ lang }: { lang: 'fr' | 'ar' }) {
     setShowForm(false); loadArticles();
   }
 
-  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch('/api/articles/import', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (res.ok) {
-      alert(tr(`✅ Importation réussie !\n${data.imported} articles traités.`, `✅ تم الاستيراد بنجاح!\nتمت معالجة ${data.imported} منتج.`));
-      loadArticles();
-    } else { alert(tr("Erreur lors de l'importation", 'حدث خطأ أثناء الاستيراد')); }
-    setImporting(false); e.target.value = '';
-  }
 
   return (
     <div className="min-w-0 p-2 sm:p-4 max-w-6xl mx-auto">
@@ -96,15 +82,14 @@ export default function ArticlesClient({ lang }: { lang: 'fr' | 'ar' }) {
           <a href="/api/articles/export" className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm">
             ⬇️ Exporter Excel
           </a>
-          <label className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 text-sm cursor-pointer">
-            {importing ? tr("Importation...", "جار الاستيراد...") : tr("⬆️ Importer Excel", "⬆️ استيراد Excel")}
-            <input type="file" accept=".xlsx, .xls" className="hidden" onChange={handleImport} disabled={importing} />
-          </label>
+
           <button onClick={() => setShowForm(!showForm)} className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-medium text-sm">
             {showForm ? tr("Annuler", "إلغاء") : tr("+ Nouvel article", "+ منتج جديد")}
           </button>
         </div>
       </div>
+
+      <CatalogImport kind="articles" lang={lang} onImported={loadArticles} />
 
       {showForm && (
         <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { formatMad } from '@/lib/utils';
 import { dictionaries, Language } from '@/lib/dictionaries';
 import PurchaseImport from './PurchaseImport';
+import CatalogImport from '@/components/CatalogImport';
 
 export default function PurchasesPage() {
   const [lang, setLang] = useState<Language>('fr');
@@ -100,6 +101,7 @@ export default function PurchasesPage() {
       {loadError && <div role="alert" className="bg-amber-50 text-amber-900 p-3 rounded">{lang === 'ar' ? 'تعذر تحميل بعض البيانات' : 'Certaines données n’ont pas pu être chargées.'} <button type="button" onClick={loadData} className="underline">{lang === 'ar' ? 'إعادة المحاولة' : 'Réessayer'}</button></div>}
 
       <PurchaseImport lang={lang} onImported={loadData} />
+      <CatalogImport kind="suppliers" lang={lang} onImported={loadData} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Formulaire Nouveau Fournisseur */}
