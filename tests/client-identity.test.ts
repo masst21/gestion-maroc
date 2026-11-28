@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {normalizeCin,validCin,cleanClient} from '../src/lib/clientIdentity';
+assert.equal(normalizeCin(' ab-123456 '),'AB123456');
+assert.equal(validCin('AB123456'),true);
+assert.equal(validCin('ABX!'),false);
+assert.equal(cleanClient({name:' Synthetic ',cin:'ab-123456',address:' Example ',creditLimit:'0'}).cin,'AB123456');
+assert.equal(cleanClient({name:'Synthetic',cin:'',address:''}).cin,null);
+assert.throws(()=>cleanClient({name:'Synthetic',cin:'INVALID'}));
+assert.throws(()=>cleanClient({name:'Synthetic',creditLimit:-1}));
+assert.throws(()=>cleanClient({name:'Synthetic',email:'invalid'}));
+console.log('Client identity validation passed');

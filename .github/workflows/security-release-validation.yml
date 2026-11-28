@@ -1,0 +1,69 @@
+name: Security and combined module validation
+on:
+  push:
+    branches: [feature/security-release-validation]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  combined-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: release_test
+          POSTGRES_PASSWORD: local_test_only
+          POSTGRES_DB: release_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U release_test -d release_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://release_test:local_test_only@127.0.0.1:5432/release_test
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Recreate old schema and apply additive SQL migrations
+        run: |
+          git show 57587ffb00af0f5a918e6ebc568aba730ca45c72:prisma/schema.prisma > prisma/test-before.prisma
+          npx prisma db push --schema prisma/test-before.prisma --skip-generate
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/supplier-ledger-before.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f prisma/postgresql-upgrades/20261128_supplier_ledger.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f prisma/postgresql-upgrades/20261128_client_identity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f prisma/postgresql-upgrades/20261128_auth_sessions.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/supplier-ledger-after.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/client-identity-after.sql
+          npx prisma validate
+          npx prisma generate
+          node tests/release-seed.cjs
+      - name: Unit and static security checks
+        run: |
+          npx tsx tests/dashboard-daily.test.ts
+          npx tsx tests/client-identity.test.ts
+          node --check electron/main.js
+          if git grep -n -E "cookies\(\)\.get\(['\"]gm_session['\"]\)" -- 'src/**/*.ts' 'src/**/*.tsx' ':!src/**/*.backup'; then exit 1; fi
+      - run: npm run build
+      - name: Real login, logout, tenant isolation, catalog and supplier API smoke tests
+        run: |
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          HOSTNAME=127.0.0.1 PORT=3100 node .next/standalone/server.js > /tmp/release-test.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true; cat /tmp/release-test.log' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3100/login >/dev/null; then break; fi
+            sleep 1
+          done
+          node tests/catalog-api.test.mjs
