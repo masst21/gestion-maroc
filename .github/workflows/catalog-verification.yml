@@ -1,0 +1,69 @@
+name: Articles and Clients verification
+on:
+  push:
+    branches: [feature/client-identity]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-postgres-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: catalog_test
+          POSTGRES_PASSWORD: local_test_only
+          POSTGRES_DB: catalog_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U catalog_test -d catalog_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://catalog_test:local_test_only@127.0.0.1:5432/catalog_test
+      PGPASSWORD: local_test_only
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci
+      - name: Recreate production schema before client identity (synthetic database only)
+        run: |
+          git fetch --depth=1 origin e133afcc310a4631ff9fa735b0cb02d6f5ddeb11
+          git show FETCH_HEAD:prisma/schema.prisma > prisma/test-before.prisma
+          npx prisma db push --schema prisma/test-before.prisma --skip-generate
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/catalog-before.sql
+      - name: Apply additive client migration and verify legacy rows
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f prisma/postgresql-upgrades/20261128_client_identity.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/client-identity-after.sql
+          npx prisma validate
+          npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+      - name: Validate identity logic
+        run: npx tsx tests/client-identity.test.ts
+      - name: Build application including OCR assets
+        run: npm run build
+      - name: Smoke test APIs on isolated data
+        run: |
+          cp -r public .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -r .next/static .next/standalone/.next/static
+          HOSTNAME=127.0.0.1 PORT=3100 node .next/standalone/server.js > /tmp/catalog-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true; cat /tmp/catalog-server.log' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3100/login >/dev/null; then break; fi
+            sleep 1
+          done
+          node tests/catalog-api.test.mjs
