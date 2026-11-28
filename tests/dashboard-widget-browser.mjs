@@ -12,8 +12,12 @@ for(const [engine,options,label] of [[chromium,{viewport:{width:1366,height:768}
   await page.goto('http://127.0.0.1:3100/dashboard');
   const widget=page.getByTestId('daily-widget');
   await widget.waitFor();
-  await widget.getByText('22 °C',{exact:false}).waitFor();
+  await widget.getByText('22 °C',{exact:true}).waitFor();
   assert.equal(await page.getByTestId('daily-city').inputValue(),'agadir');
+  assert.ok(await widget.getByTestId('daily-next-prayer').isVisible());
+  assert.ok(!(await widget.getByText('MET Norway',{exact:true}).isVisible()));
+  assert.ok((await widget.boundingBox()).height<=48);
+  await widget.getByTestId('daily-details').click();
   await page.getByTestId('daily-city').selectOption('rabat');
   await page.reload();
   await widget.getByText('22 °C',{exact:false}).waitFor();
@@ -21,7 +25,9 @@ for(const [engine,options,label] of [[chromium,{viewport:{width:1366,height:768}
   assert.ok(await widget.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
   await context.addCookies([{name:'lang',value:'ar',url:'http://127.0.0.1:3100'}]);
   await page.reload();
-  await widget.getByText('معلومات اليوم').waitFor();
+  await page.getByRole('region',{name:'معلومات اليوم'}).waitFor();
+  assert.ok((await widget.boundingBox()).height<=48);
+  assert.ok(!(await widget.getByText('MET Norway',{exact:true}).isVisible()));
   assert.ok(await widget.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
   console.log(label+' FR/AR, weather fixture, city persistence and layout passed');
  }finally{await browser.close();}
