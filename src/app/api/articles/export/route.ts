@@ -16,6 +16,7 @@ export async function GET() {
   // Préparer les données pour Excel
   const data = articles.map(a => ({
     'Référence': a.reference,
+    'Code-barres': a.barcode || '',
     'Désignation': a.name,
     'Catégorie': a.category || '',
     'Prix Achat': a.purchasePrice,
