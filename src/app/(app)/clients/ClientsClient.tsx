@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { formatMad } from '@/lib/utils';
+import CatalogImport from '@/components/CatalogImport';
 
 export default function ClientsClient({ lang }: { lang: 'fr' | 'ar' }) {
   const tr = (fr: string, ar: string) => lang === 'ar' ? ar : fr;
@@ -21,6 +22,7 @@ export default function ClientsClient({ lang }: { lang: 'fr' | 'ar' }) {
     <div className="min-w-0 p-2 sm:p-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">{tr("Clients", "العملاء")}</h1>
       
+      <CatalogImport kind="clients" lang={lang} onImported={load} />
       <form onSubmit={submit} className="bg-white p-4 rounded-xl border mb-6 flex gap-2 flex-wrap">
         <input required placeholder={tr("Nom du client", "اسم العميل")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="border p-2 rounded flex-1" />
         <input placeholder={tr("Téléphone", "الهاتف")} value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="border p-2 rounded" />

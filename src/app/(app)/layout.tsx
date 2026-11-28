@@ -29,6 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/clients', label: t.clients, icon: '👥', roles: ['admin', 'manager', 'cashier'] },
     { href: '/cash', label: t.cashPage, icon: '💰', roles: ['admin', 'manager', 'cashier'] },
     { href: '/accounting', label: t.accounting, icon: '📚', roles: ['admin', 'accountant'] },
+    { href: '/aged-balance', label: lang === 'ar' ? 'أعمار الديون' : 'Balance âgée', icon: '📅', roles: ['admin', 'manager', 'accountant'] },
     { href: '/zakat', label: t.zakat, icon: '🕌', roles: ['admin', 'accountant'] },
     { href: '/users', label: t.users, icon: '🔐', roles: ['admin'] },
     { href: '/settings', label: t.settings, icon: '⚙️', roles: ['admin'] },
