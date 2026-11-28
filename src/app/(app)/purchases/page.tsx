@@ -13,6 +13,10 @@ export default function PurchasesPage() {
   const [newSupplier, setNewSupplier] = useState({ name: '', phone: '', ice: '' });
   const [error, setError] = useState('');
   const [importing, setImporting] = useState(false);
+  const [savingSupplier, setSavingSupplier] = useState(false);
+  const [savingPurchase, setSavingPurchase] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     // Lecture de la langue depuis le cookie
@@ -24,39 +28,58 @@ export default function PurchasesPage() {
 
   const t = dictionaries[lang];
 
-  function loadData() {
-    fetch('/api/suppliers').then(r => r.json()).then(setSuppliers);
-    fetch('/api/articles').then(r => r.json()).then(setArticles);
-    fetch('/api/purchases').then(r => r.json()).then(setPurchases);
+  async function loadData() {
+    const results = await Promise.allSettled(['/api/suppliers', '/api/articles', '/api/purchases'].map(async url => {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('load');
+      const rows = await res.json();
+      if (!Array.isArray(rows)) throw new Error('data');
+      return rows;
+    }));
+    if (results[0].status === 'fulfilled') setSuppliers(results[0].value);
+    if (results[1].status === 'fulfilled') setArticles(results[1].value);
+    if (results[2].status === 'fulfilled') setPurchases(results[2].value);
+    setLoadError(results.some(r => r.status === 'rejected'));
   }
 
   async function addSupplier(e: React.FormEvent) {
     e.preventDefault();
-    if (!newSupplier.name) return;
-    await fetch('/api/suppliers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newSupplier) });
-    setNewSupplier({ name: '', phone: '', ice: '' });
-    loadData();
+    if (savingSupplier || !newSupplier.name.trim()) return;
+    setError(''); setNotice(''); setSavingSupplier(true);
+    try {
+      const res = await fetch('/api/suppliers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newSupplier) });
+      const supplier = await res.json();
+      if (!res.ok || !supplier.id) {
+        setError(res.status === 409 ? (lang === 'ar' ? 'المورد موجود بالفعل' : 'Ce fournisseur existe déjà') : (lang === 'ar' ? 'تعذر إضافة المورد' : 'Impossible d’ajouter le fournisseur'));
+        return;
+      }
+      setSuppliers(rows => [...rows.filter(s => s.id !== supplier.id), supplier].sort((a,b) => a.name.localeCompare(b.name)));
+      setForm(f => ({ ...f, supplierId: supplier.id }));
+      setNewSupplier({ name: '', phone: '', ice: '' });
+      setNotice(lang === 'ar' ? 'تمت إضافة المورد واختياره' : 'Fournisseur ajouté et sélectionné.');
+    } catch {
+      setError(lang === 'ar' ? 'خطأ في الاتصال' : 'Erreur de connexion');
+    } finally { setSavingSupplier(false); }
   }
 
   async function handlePurchase(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    if (savingPurchase) return;
+    setError(''); setNotice('');
     if (!form.supplierId || !form.articleId) return setError(lang === 'ar' ? 'يرجى اختيار مورد ومنتج' : 'Sélectionnez un fournisseur et un article');
-    
-    const res = await fetch('/api/purchases', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        supplierId: form.supplierId,
-        items: [{ articleId: form.articleId, quantity: form.quantity, unitCost: form.unitCost }]
-      }),
-    });
-    
-    if (!res.ok) return setError(lang === 'ar' ? 'خطأ في الحفظ' : 'Erreur lors de l\'enregistrement');
-
-    setForm({ ...form, articleId: '', quantity: 1, unitCost: 0 });
-    loadData();
-    alert(lang === 'ar' ? 'تم حفظ المشتريات وتحديث المخزون!' : 'Achat enregistré, stock mis à jour !');
+    if (!Number.isFinite(form.quantity) || form.quantity <= 0 || !Number.isFinite(form.unitCost) || form.unitCost < 0) return setError(lang === 'ar' ? 'كمية أو سعر غير صالح' : 'Quantité ou prix invalide');
+    setSavingPurchase(true);
+    try {
+      const res = await fetch('/api/purchases', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ supplierId: form.supplierId, items: [{ articleId: form.articleId, quantity: form.quantity, unitCost: form.unitCost }] }),
+      });
+      if (!res.ok) { setError(lang === 'ar' ? 'خطأ في الحفظ' : 'Erreur lors de l’enregistrement'); return; }
+      setForm(f => ({ ...f, articleId: '', quantity: 1, unitCost: 0 }));
+      setNotice(lang === 'ar' ? 'تم حفظ المشتريات وتحديث المخزون' : 'Achat enregistré, stock mis à jour.');
+      await loadData();
+    } catch { setError(lang === 'ar' ? 'خطأ في الاتصال' : 'Erreur de connexion'); }
+    finally { setSavingPurchase(false); }
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -95,7 +118,9 @@ export default function PurchasesPage() {
         </div>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded">{error}</div>}
+      {error && <div role="alert" className="bg-red-50 text-red-600 p-3 rounded">{error}</div>}
+      {notice && <div role="status" className="bg-green-50 text-green-800 p-3 rounded">{notice}</div>}
+      {loadError && <div role="alert" className="bg-amber-50 text-amber-900 p-3 rounded">{lang === 'ar' ? 'تعذر تحميل بعض البيانات' : 'Certaines données n’ont pas pu être chargées.'} <button type="button" onClick={loadData} className="underline">{lang === 'ar' ? 'إعادة المحاولة' : 'Réessayer'}</button></div>}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Formulaire Nouveau Fournisseur */}
@@ -107,7 +132,7 @@ export default function PurchasesPage() {
               <input placeholder={t.phone} value={newSupplier.phone} onChange={e => setNewSupplier({...newSupplier, phone: e.target.value})} className="border p-2 rounded flex-1 min-w-0" />
               <input placeholder={t.ice} value={newSupplier.ice} onChange={e => setNewSupplier({...newSupplier, ice: e.target.value})} className="border p-2 rounded flex-1 min-w-0" />
             </div>
-            <button className="bg-blue-700 text-white px-4 py-2 rounded mt-2">{t.addBtn}</button>
+            <button disabled={savingSupplier || !newSupplier.name.trim()} className="bg-blue-700 text-white px-4 py-2 rounded mt-2 disabled:opacity-50">{savingSupplier ? '…' : t.addBtn}</button>
           </form>
         </div>
 
@@ -127,7 +152,7 @@ export default function PurchasesPage() {
               <input type="number" required min="1" placeholder={t.qty} value={form.quantity} onChange={e => setForm({...form, quantity: Number(e.target.value)})} className="border p-2 rounded w-24 text-sm" />
               <input type="number" required min="0" step="0.01" placeholder={t.purchasePrice} value={form.unitCost} onChange={e => setForm({...form, unitCost: Number(e.target.value)})} className="border p-2 rounded flex-1 min-w-0 text-sm" />
             </div>
-            <button className="bg-green-600 text-white px-4 py-2 rounded text-sm mt-2">{t.savePurchase}</button>
+            <button disabled={savingPurchase || !form.supplierId || !form.articleId} className="bg-green-600 text-white px-4 py-2 rounded text-sm mt-2 disabled:opacity-50">{savingPurchase ? '…' : t.savePurchase}</button>
           </form>
         </div>
       </div>
