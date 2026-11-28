@@ -19,6 +19,8 @@ export const columns: Record<Catalog, Column[]> = {
     {key:'phone',fr:'Téléphone',ar:'الهاتف',max:50,aliases:['tel','gsm','mobile','phone','whatsapp','رقم الهاتف']},
     {key:'email',fr:'E-mail',ar:'البريد الإلكتروني',type:'email',max:254,aliases:['email','mail','courriel']},
     {key:'ice',fr:'ICE',ar:'المعرف الموحد للمقاولة',type:'ice',aliases:['identifiant commun entreprise']},
+    {key:'address',fr:'Adresse',ar:'العنوان',max:1000,aliases:['adresse complète','address','domicile']},
+    {key:'cin',fr:'CIN',ar:'رقم البطاقة الوطنية',max:30,aliases:['cnie','numéro cin','n cin','carte nationale','identity number']},
     {key:'creditLimit',fr:'Plafond crédit (MAD)',ar:'سقف الائتمان',type:'number',aliases:['plafond','plafond crédit','credit limit','limite crédit']},
   ],
   suppliers: [
