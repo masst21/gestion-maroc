@@ -1,0 +1,49 @@
+name: Windows compact desktop package
+on:
+  push:
+    branches: [feature/windows-compact-update]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-windows:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: postgresql://widget_test:local_test_only@127.0.0.1:5432/widget_test
+      NEXT_TELEMETRY_DISABLED: "1"
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: node --check electron/main.js
+      - run: npx tsx tests/dashboard-daily.test.ts
+      - run: npm run dist:win:portable
+      - name: Package and validate portable files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (!(Test-Path 'dist/win-unpacked/Mon Magasin.exe')) { throw 'Missing executable' }
+          if (!(Test-Path 'dist/win-unpacked/resources/app/server.js')) { throw 'Missing standalone server' }
+          if (!(Test-Path 'dist/win-unpacked/resources/app/.next/static')) { throw 'Missing static assets' }
+          if (Get-ChildItem 'dist/win-unpacked' -Recurse -Force -File | Where-Object { $_.Name -match '^\.env(?:\.|$)' }) { throw 'Unexpected environment file in package' }
+          New-Item -ItemType Directory -Path 'portable' | Out-Null
+          Move-Item 'dist/win-unpacked' 'portable/Mon Magasin'
+          Copy-Item 'docs/Conserver-Configuration.ps1' 'portable/'
+          Copy-Item 'docs/windows-compact-update.md' 'portable/Lisez-moi.md'
+          Compress-Archive -Path 'portable/*' -DestinationPath 'Mon-Magasin-Windows-1.0.1.zip' -CompressionLevel Optimal
+          $hash = (Get-FileHash 'Mon-Magasin-Windows-1.0.1.zip' -Algorithm SHA256).Hash
+          "$hash  Mon-Magasin-Windows-1.0.1.zip" | Out-File -Encoding ascii 'SHA256.txt'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mon-Magasin-Windows-1.0.1
+          path: |
+            Mon-Magasin-Windows-1.0.1.zip
+            SHA256.txt
+          compression-level: 0
+          retention-days: 14
