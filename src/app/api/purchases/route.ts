@@ -15,6 +15,7 @@ export async function GET() {
   try {
     const user = await currentUser();
     if (!user) return fail('Unauthorized', 401);
+    if (!['admin', 'manager'].includes(user.role)) return fail('Forbidden', 403);
     return NextResponse.json(await prisma.purchase.findMany({
       where: { storeId: user.storeId }, include: { supplier: true, items: { include: { article: true } } }, orderBy: { createdAt: 'desc' },
     }));
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
   try {
     const user = await currentUser();
     if (!user) return fail('Unauthorized', 401);
+    if (!['admin', 'manager'].includes(user.role)) return fail('Forbidden', 403);
     const body = await req.json().catch(() => null);
     if (!body || typeof body.supplierId !== 'string' || !body.supplierId || !Array.isArray(body.items) ||
         body.items.length < 1 || body.items.length > 500 || !body.items.every(validItem)) return fail('Achat invalide', 400);
