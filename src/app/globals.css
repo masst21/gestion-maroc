@@ -128,8 +128,8 @@
 
 /* Currency rates: independent scrolling area, with persistent column headers. */
 @media screen {
-  .store-currencies-scroll { max-height: 26rem; max-height: clamp(10rem, 55dvh, 30rem); overscroll-behavior: contain; scrollbar-width: auto; scrollbar-color: #8a9eaf #eef2f6; }
-  .store-currencies-scroll thead th { position: sticky; top: 0; z-index: 2; }
+  .store-currencies-scroll { position: relative; max-height: 45vh; max-height: 45dvh; overflow: auto; overscroll-behavior: contain; scrollbar-width: auto; scrollbar-color: #8a9eaf #eef2f6; }
+  .store-currencies-scroll thead th { position: sticky; top: 0; z-index: 2; background: #203b55; color: #fff; }
   .store-currencies-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
   .store-currencies-scroll::-webkit-scrollbar-thumb { background: #8a9eaf; border-radius: 5px; border: 2px solid #eef2f6; }
   .store-currencies-scroll::-webkit-scrollbar-track { background: #eef2f6; }
