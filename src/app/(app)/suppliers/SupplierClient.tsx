@@ -8,7 +8,8 @@ type Detail=Basic & {profile:Record<string,string|number|null>|null;invoices:Inv
 type Rate={code:string;rate:number;date:string};
 const emptyProfile={name:'',phone:'',ice:'',contactName:'',email:'',address:'',city:'',country:'Maroc',taxId:'',tradeRegister:'',bankName:'',bankAccount:'',swift:'',paymentTermDays:'30',preferredCurrency:'MAD',notes:''};
 const toDay=(s:string)=>s.slice(0,10);
-const invoiceRemaining=(i:Invoice)=>Math.max(0,(Math.round(Number(i.amount)*10000)-i.payments.reduce((n,p)=>n+Math.round(Number(p.amount)*10000),0))/10000);
+const units=(s:string)=>{const [whole,frac='']=s.split('.');return BigInt(whole)*BigInt(10000)+BigInt(frac.padEnd(4,'0').slice(0,4));};
+const invoiceRemaining=(i:Invoice)=>Math.max(0,Number(units(i.amount)-i.payments.reduce((n,p)=>n+units(p.amount),BigInt(0)))/10000);
 export default function SupplierClient({lang,canEdit,today}:{lang:'fr'|'ar';canEdit:boolean;today:string}){
   const tr=(fr:string,ar:string)=>lang==='ar'?ar:fr;
   const [list,setList]=useState<Basic[]>([]);

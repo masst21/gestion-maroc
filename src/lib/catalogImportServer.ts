@@ -79,10 +79,10 @@ export async function importCatalog(req:Request, kind:Catalog) {
         if(c.type==='number'){
           const cell=vals[i]?.[j];
           const numeric=c.key==='vatRate'&&typeof s==='string'&&s.endsWith('%')?parseNumber(s.slice(0,-1)):parseNumber(cell);
-          if(!Number.isFinite(numeric)||numeric<0||numeric>1e12||(c.key==='vatRate'&&numeric>100)){issues.push({line,reason:'NUMBER',field:c.key});invalid=true;continue;}
+          if(!Number.isFinite(numeric)||numeric<0||numeric>1e12||(c.key==='vatRate'&&numeric>100)||(c.key==='paymentTermDays'&&(!Number.isInteger(numeric)||numeric>365))){issues.push({line,reason:'NUMBER',field:c.key});invalid=true;continue;}
           v[c.key]=numeric;
         } else {
-          if((c.max&&s.length>c.max)||(c.type==='ice'&&!/^\d{15}$/.test(s))||(c.type==='email'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))){issues.push({line,reason:'FORMAT',field:c.key});invalid=true;continue;}
+          if((c.max&&s.length>c.max)||(c.key==='preferredCurrency'&&!/^[A-Za-z]{3}$/.test(s))||(c.type==='ice'&&!/^\d{15}$/.test(s))||(c.type==='email'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))){issues.push({line,reason:'FORMAT',field:c.key});invalid=true;continue;}
           v[c.key]=s;
         }
       }
@@ -110,7 +110,17 @@ export async function importCatalog(req:Request, kind:Catalog) {
         } else {
           const common={storeId,name:String(v.name),phone:typeof v.phone==='string'?v.phone:undefined,ice:typeof v.ice==='string'?v.ice:undefined};
           if(kind==='clients')await tx.client.create({data:{...common,email:typeof v.email==='string'?v.email:undefined,creditLimit:typeof v.creditLimit==='number'?v.creditLimit:undefined}});
-          else await tx.supplier.create({data:common});
+          else {
+            const get=(k:string)=>typeof v[k]==='string'?v[k] as string:undefined;
+            const supplier=await tx.supplier.create({data:common});
+            const profile={
+              contactName:get('contactName'),email:get('email'),address:get('address'),city:get('city'),country:get('country'),
+              taxId:get('taxId'),tradeRegister:get('tradeRegister'),bankName:get('bankName'),bankAccount:get('bankAccount'),
+              swift:get('swift'),notes:get('notes'),paymentTermDays:typeof v.paymentTermDays==='number'?v.paymentTermDays:undefined,
+              preferredCurrency:get('preferredCurrency')?.toUpperCase()
+            };
+            if(Object.values(profile).some(x=>x!==undefined))await tx.supplierProfile.create({data:{supplierId:supplier.id,...profile}});
+          }
         }
       }
     },{timeout:25000,isolationLevel:Prisma.TransactionIsolationLevel.Serializable});
