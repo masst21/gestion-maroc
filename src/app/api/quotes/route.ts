@@ -11,7 +11,7 @@ export async function GET() {
 
   const quotes = await prisma.quote.findMany({
     where: { storeId: user.storeId },
-    include: { client: true, items: true },
+    include: { client: { select: { id: true, name: true, phone: true, email: true, ice: true, creditLimit: true, balance: true } }, items: true },
     orderBy: { date: 'desc' },
   });
   return NextResponse.json(quotes);
