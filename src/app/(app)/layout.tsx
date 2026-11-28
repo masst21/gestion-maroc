@@ -1,3 +1,4 @@
+import { sessionUserId } from '@/lib/session';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
@@ -6,7 +7,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { dictionaries, Language } from '@/lib/dictionaries';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
   if (!userId) redirect('/login');
 
   const user = await prisma.user.findUnique({
@@ -24,6 +25,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/sales', label: t.sales, icon: '🧾', roles: ['admin', 'manager', 'cashier', 'accountant'] },
     { href: '/articles', label: t.articles, icon: '📦', roles: ['admin', 'manager'] },
     { href: '/purchases', label: t.purchases, icon: '🚚', roles: ['admin', 'manager'] },
+    { href: '/suppliers', label: lang === 'ar' ? 'الموردون' : 'Fournisseurs', icon: '🏢', roles: ['admin', 'manager', 'accountant'] },
     { href: '/quotes', label: t.quotes, icon: '📝', roles: ['admin', 'manager', 'cashier'] },
     { href: '/expenses', label: t.expenses, icon: '💸', roles: ['admin', 'manager', 'accountant'] },
     { href: '/clients', label: t.clients, icon: '👥', roles: ['admin', 'manager', 'cashier'] },

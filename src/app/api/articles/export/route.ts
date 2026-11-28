@@ -1,10 +1,12 @@
+import { sessionUserId } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import * as XLSX from 'xlsx';
 
 export async function GET() {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
+  if (!userId) return NextResponse.json({error:'Unauthorized'},{status:401});
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -16,6 +18,7 @@ export async function GET() {
   // Préparer les données pour Excel
   const data = articles.map(a => ({
     'Référence': a.reference,
+    'Code-barres': a.barcode || '',
     'Désignation': a.name,
     'Catégorie': a.category || '',
     'Prix Achat': a.purchasePrice,

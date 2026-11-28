@@ -1,3 +1,4 @@
+import { sessionUserId } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
@@ -5,7 +6,7 @@ import { cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
 async function currentUser() {
-  const id = cookies().get('gm_session')?.value;
+  const id = await sessionUserId();
   if (!id) return null;
   return prisma.user.findFirst({ where: { id, isActive: true } });
 }

@@ -1,10 +1,12 @@
+import { sessionUserId } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
+  if (!userId) return NextResponse.json({error:'Unauthorized'},{status:401});
   const user = await prisma.user.findUnique({ where: { id: userId } });
   // Seul un admin peut voir les utilisateurs
   if (!user || user.role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -18,7 +20,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const userId = cookies().get('gm_session')?.value;
+  const userId = await sessionUserId();
+  if (!userId) return NextResponse.json({error:'Unauthorized'},{status:401});
   const admin = await prisma.user.findUnique({ where: { id: userId } });
   if (!admin || admin.role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -36,5 +39,5 @@ export async function POST(req: Request) {
       role,
     },
   });
-  return NextResponse.json(newUser);
+  return NextResponse.json({id:newUser.id,fullName:newUser.fullName,email:newUser.email,role:newUser.role,isActive:newUser.isActive});
 }

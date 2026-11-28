@@ -43,6 +43,7 @@ model User {
   createdAt DateTime @default(now())
 
   store Store @relation(fields: [storeId], references: [id])
+  sessions AuthSession[]
 }
 
 model Article {
@@ -76,6 +77,8 @@ model Client {
   phone       String?
   email       String?
   ice         String?
+  address     String?
+  cin         String?
   creditLimit Float    @default(0)
   balance     Float    @default(0)
   isActive    Boolean  @default(true)
@@ -84,6 +87,7 @@ model Client {
   store Store  @relation(fields: [storeId], references: [id])
   sales Sale[]
   quotes Quote[]
+  @@unique([storeId, cin])
 }
 
 model Sale {
@@ -132,6 +136,64 @@ model Supplier {
 
   store     Store      @relation(fields: [storeId], references: [id])
   purchases Purchase[]
+  profile   SupplierProfile?
+  invoices  SupplierInvoice[]
+}
+
+model SupplierProfile {
+  supplierId       String @id
+  contactName      String?
+  email            String?
+  address          String?
+  city             String?
+  country          String @default("Maroc")
+  taxId            String?
+  tradeRegister    String?
+  bankName         String?
+  bankAccount      String?
+  swift            String?
+  paymentTermDays  Int @default(30)
+  preferredCurrency String @default("MAD")
+  notes            String?
+  supplier         Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+}
+
+model SupplierInvoice {
+  id          String @id @default(cuid())
+  supplierId  String
+  invoiceNo   String
+  invoiceDate DateTime @db.Date
+  dueDate     DateTime @db.Date
+  currency    String
+  amount      Decimal @db.Decimal(18, 4)
+  rate        Decimal @db.Decimal(20, 10)
+  rateDate    DateTime @db.Date
+  amountMad   Decimal @db.Decimal(18, 2)
+  createdAt   DateTime @default(now())
+  createdBy   String
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  payments    SupplierPayment[]
+  @@unique([supplierId, invoiceNo])
+  @@index([supplierId, dueDate])
+}
+
+model SupplierPayment {
+  id          String @id @default(cuid())
+  invoiceId   String
+  requestId   String
+  amount      Decimal @db.Decimal(18, 4)
+  currency    String
+  rate        Decimal @db.Decimal(20, 10)
+  rateDate    DateTime @db.Date
+  amountMad   Decimal @db.Decimal(18, 2)
+  paidAt      DateTime @db.Date
+  method      String
+  reference   String?
+  createdAt   DateTime @default(now())
+  createdBy   String
+  invoice     SupplierInvoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  @@unique([invoiceId, requestId])
+  @@index([invoiceId, paidAt])
 }
 
 model Purchase {
@@ -230,4 +292,13 @@ model QuoteItem {
   lineTotalTtc Float
 
   quote        Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+}
+model AuthSession {
+  tokenHash String @id
+  userId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
 }
